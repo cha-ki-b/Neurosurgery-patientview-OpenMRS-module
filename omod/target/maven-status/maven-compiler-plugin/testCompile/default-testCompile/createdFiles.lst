@@ -1,0 +1,2 @@
+org\openmrs\module\patientview\ModuleSmokeTest.class
+org\openmrs\module\patientview\ModuleWiringTest.class

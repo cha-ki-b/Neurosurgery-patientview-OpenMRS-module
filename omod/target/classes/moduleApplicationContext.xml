@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+         http://www.springframework.org/schema/beans
+         http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+  <!-- DAO: NOTE the id uses the fully-qualified style OpenMRS expects -->
+  <bean id="patientview.PatientviewDao"
+        class="org.openmrs.module.patientview.api.dao.PatientviewDAOImpl">
+    <property name="sessionFactory" ref="sessionFactory"/>
+  </bean>
+
+  <!-- Service target (plain implementation) -->
+  <bean id="patientview.PatientviewServiceTarget"
+        class="org.openmrs.module.patientview.api.impl.PatientviewServiceImpl">
+    <property name="dao" ref="patientview.PatientviewDao"/>
+  </bean>
+
+  <!-- Transactional proxy exposed to Context.getService(...) -->
+  <bean id="patientview.PatientviewService"
+      class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean"
+      primary="true">
+    <property name="transactionManager" ref="transactionManager"/>
+    <property name="target" ref="patientview.PatientviewServiceTarget"/>
+    <property name="transactionAttributes">
+      <props>
+        <prop key="*">PROPAGATION_REQUIRED</prop>
+      </props>
+    </property>
+</bean>
+
+  <!-- Registers the service above with OpenMRS's ServiceContext, so
+       Context.getService(PatientviewService.class) can actually find it -->
+  <bean parent="serviceContext">
+    <property name="moduleService">
+      <list>
+        <value>org.openmrs.module.patientview.api.PatientviewService</value>
+        <ref bean="patientview.PatientviewService"/>
+      </list>
+    </property>
+  </bean>
+</beans>

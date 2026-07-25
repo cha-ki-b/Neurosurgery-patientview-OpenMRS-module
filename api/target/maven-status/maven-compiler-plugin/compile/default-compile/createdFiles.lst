@@ -1,0 +1,8 @@
+org\openmrs\module\patientview\api\model\SurgicalHistory.class
+org\openmrs\module\patientview\PatientViewActivator.class
+org\openmrs\module\patientview\api\dao\PatientviewDAOImpl.class
+org\openmrs\module\patientview\api\PatientviewService.class
+org\openmrs\module\patientview\api\dao\PatientviewDao.class
+org\openmrs\module\patientview\api\model\NeuroAssessment.class
+org\openmrs\module\patientview\Item.class
+org\openmrs\module\patientview\api\impl\PatientviewServiceImpl.class

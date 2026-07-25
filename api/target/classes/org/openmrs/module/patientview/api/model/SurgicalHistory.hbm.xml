@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="org.openmrs.module.patientview.api.model">
+    <class name="SurgicalHistory" table="patientview_surgical_history">
+        <id name="id" type="int" column="surgical_history_id">
+            <generator class="native"/>
+        </id>
+        <property name="uuid" type="string" column="uuid" length="38" unique="true"/>
+        <many-to-one name="patient" class="org.openmrs.Patient" column="patient_id" not-null="true"/>
+        <property name="procedureName" type="string" column="procedure_name" not-null="true"/>
+        <property name="datePerformed" type="timestamp" column="date_performed"/>
+        <property name="surgeon" type="string" column="surgeon"/>
+        <property name="outcome" type="string" column="outcome"/>
+        <property name="notes" type="string" column="notes" length="1000"/>
+        <many-to-one name="creator" class="org.openmrs.User" column="creator" not-null="true"/>
+        <property name="dateCreated" type="timestamp" column="date_created" not-null="true"/>
+    </class>
+</hibernate-mapping>

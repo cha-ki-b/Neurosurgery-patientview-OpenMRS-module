@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9
+                  http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
+
+    <!--
+    	See http://wiki.openmrs.org/display/docs/Module+liquibase+File for
+    	documentation on this file.
+
+        See http://www.liquibase.org/manual/home#available_database_refactorings
+        for a list of supported elements and attributes
+    -->
+
+    <!-- Uncomment the changeset below if you want to make the Item class persistable, see also Item and PatientviewDaoTest -->
+    <!--
+	<changeSet id="patientview-2016-08-02-12-21" author="raff">
+		<preConditions onFail="MARK_RAN">
+			<not><tableExists tableName="patientview_item"/></not>
+		</preConditions>
+		<comment>
+			Creating the patientview_item table
+		</comment>
+		<createTable tableName="patientview_item">
+			<column name="patientview_item_id" type="int" autoIncrement="true">
+				<constraints primaryKey="true" nullable="false"/>
+			</column>
+			<column name="uuid" type="char(38)">
+				<constraints nullable="false" unique="true"></constraints>
+			</column>
+			<column name="owner" type="int" />
+			<column name="description" type="varchar(255)" />
+		</createTable>
+        <addForeignKeyConstraint constraintName="patientview_item_owner_fk" baseTableName="patientview_item" baseColumnNames="owner"  referencedTableName="users"
+                                 referencedColumnNames="user_id" />
+    </changeSet> -->
+
+    <changeSet id="patientview-2026-07-19-01" author="patientview-roadmap">
+        <comment>Creating the patientview_neuro_assessment table</comment>
+        <createTable tableName="patientview_neuro_assessment">
+            <column name="neuro_assessment_id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="uuid" type="char(38)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="patient_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="assessment_date" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="eye_response" type="int"/>
+            <column name="verbal_response" type="int"/>
+            <column name="motor_response" type="int"/>
+            <column name="gcs_total" type="int"/>
+            <column name="notes" type="varchar(1000)"/>
+            <column name="creator" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_created" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="patientview_neuro_patient_fk"
+            baseTableName="patientview_neuro_assessment" baseColumnNames="patient_id"
+            referencedTableName="patient" referencedColumnNames="patient_id"/>
+        <addForeignKeyConstraint constraintName="patientview_neuro_creator_fk"
+            baseTableName="patientview_neuro_assessment" baseColumnNames="creator"
+            referencedTableName="users" referencedColumnNames="user_id"/>
+    </changeSet>
+
+    <changeSet id="patientview-2026-07-19-02" author="patientview-roadmap">
+        <comment>Creating the patientview_surgical_history table</comment>
+        <createTable tableName="patientview_surgical_history">
+            <column name="surgical_history_id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="uuid" type="char(38)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="patient_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="procedure_name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_performed" type="datetime"/>
+            <column name="surgeon" type="varchar(255)"/>
+            <column name="outcome" type="varchar(255)"/>
+            <column name="notes" type="varchar(1000)"/>
+            <column name="creator" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_created" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="patientview_surg_patient_fk"
+            baseTableName="patientview_surgical_history" baseColumnNames="patient_id"
+            referencedTableName="patient" referencedColumnNames="patient_id"/>
+        <addForeignKeyConstraint constraintName="patientview_surg_creator_fk"
+            baseTableName="patientview_surgical_history" baseColumnNames="creator"
+            referencedTableName="users" referencedColumnNames="user_id"/>
+    </changeSet>
+
+</databaseChangeLog>

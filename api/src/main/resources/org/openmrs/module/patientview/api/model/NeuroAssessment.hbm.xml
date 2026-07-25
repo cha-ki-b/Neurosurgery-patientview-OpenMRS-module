@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="org.openmrs.module.patientview.api.model">
+    <class name="NeuroAssessment" table="patientview_neuro_assessment">
+        <id name="id" type="int" column="neuro_assessment_id">
+            <generator class="native"/>
+        </id>
+        <property name="uuid" type="string" column="uuid" length="38" unique="true"/>
+        <many-to-one name="patient" class="org.openmrs.Patient" column="patient_id" not-null="true"/>
+        <property name="assessmentDate" type="timestamp" column="assessment_date" not-null="true"/>
+        <property name="eyeResponse" type="int" column="eye_response"/>
+        <property name="verbalResponse" type="int" column="verbal_response"/>
+        <property name="motorResponse" type="int" column="motor_response"/>
+        <property name="gcsTotal" type="int" column="gcs_total"/>
+        <property name="notes" type="string" column="notes" length="1000"/>
+        <many-to-one name="creator" class="org.openmrs.User" column="creator" not-null="true"/>
+        <property name="dateCreated" type="timestamp" column="date_created" not-null="true"/>
+    </class>
+</hibernate-mapping>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module configVersion="1.2">
+    
+    <!-- Basic Module Properties -->
+    <id>patientview</id>
+    <name>Neurosurgery Patient View Override</name>
+    <version>1.0.0-SNAPSHOT</version>
+    <package>org.openmrs.module.patientview</package>
+    <author>Hani</author>
+    <description>
+        Simple override of the patient view for neurosurgery departments.
+        Replaces the default coreapps patient page with a neurosurgery-focused view.
+    </description>
+    
+    <activator>org.openmrs.module.patientview.PatientViewActivator</activator>
+    
+    <!-- OpenMRS Version Requirements -->
+    <require_version>2.4.3</require_version>
+    
+    <!-- Required Modules -->
+    <require_modules>
+        <require_module version="2.16.0">
+            org.openmrs.module.uiframework
+        </require_module>
+        <require_module version="2.24.0">
+            org.openmrs.module.webservices.rest
+        </require_module>
+        <require_module version="1.16.0">
+            org.openmrs.module.coreapps
+        </require_module>
+        <require_module version="1.10.0">
+            org.openmrs.module.appui
+        </require_module>
+    </require_modules>
+
+    <!-- Hibernate mapping files for this module's persistent classes -->
+    <mappingFiles>
+        org/openmrs/module/patientview/api/model/NeuroAssessment.hbm.xml
+        org/openmrs/module/patientview/api/model/SurgicalHistory.hbm.xml
+    </mappingFiles>
+
+    <!-- Messages -->
+    <messages>
+        <lang>en</lang>
+        <file>messages.properties</file>
+    </messages>
+    
+</module>

@@ -1,0 +1,3 @@
+org\openmrs\module\patientview\web\controller\NeuroAssessmentRestController.class
+org\openmrs\module\patientview\page\controller\clinicianfacing\PatientPageController.class
+org\openmrs\module\patientview\fragment\controller\UsersFragmentController.class

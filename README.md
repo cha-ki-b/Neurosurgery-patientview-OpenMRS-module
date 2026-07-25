@@ -7,6 +7,8 @@ neurological assessments from the UI.
 **Target platform:** OpenMRS Platform 2.5.9 / Reference Application 2.12.2
 **Module ID:** `neuro-patient-view` · **Package:** `org.openmrs.module.patientview`
 
+Thanks to `hanyG175` and `bouzenaali` for starting the job : [Repo](https://github.com/hanyG175/openmrs-patientview-module)
+
 ---
 
 ## 1. Architecture
@@ -29,9 +31,9 @@ logic testable and reusable independently of the web layer.
 Two persistent entities, mapped with classic Hibernate `.hbm.xml` (not JPA annotations):
 
 | Entity            | Table                          | Notes                                    |
-|--------------------|--------------------------------|-------------------------------------------|
-| `NeuroAssessment`  | `patientview_neuro_assessment` | GCS eye/verbal/motor scores, notes, date  |
-| `SurgicalHistory`  | `patientview_surgical_history` | Procedure, surgeon, outcome, date         |
+| ----------------- | ------------------------------ | ---------------------------------------- |
+| `NeuroAssessment` | `patientview_neuro_assessment` | GCS eye/verbal/motor scores, notes, date |
+| `SurgicalHistory` | `patientview_surgical_history` | Procedure, surgeon, outcome, date        |
 
 Schema is created via `api/src/main/resources/liquibase.xml` (two changesets, FK'd to
 `patient` and `users`). **The filename matters**: OpenMRS looks up this changelog by the
@@ -47,7 +49,7 @@ Mapping files are registered the OpenMRS-documented way, via `config.xml`:
 </mappingFiles>
 ```
 
-*(Not* via a Spring `parent="mappingResources"` bean — that bean doesn't exist in OpenMRS
+_(Not_ via a Spring `parent="mappingResources"` bean — that bean doesn't exist in OpenMRS
 core and will break module startup.)
 
 ## 3. Service layer
@@ -109,7 +111,7 @@ OpenMRS — missing any one produces a different failure mode:
     `MissingPropertyException` at render time. Guarded by `ModuleWiringTest` (§7).
 - **Extension**: `apps/patientview_extension.json` — adds the "Neurosurgery Dashboard" link
   to the patient dashboard. Every detail here was verified against `appframework`'s and
-  `coreapps`' actual source, because each one fails *silently* (no startup error, the link
+  `coreapps`' actual source, because each one fails _silently_ (no startup error, the link
   just never appears) if wrong:
   - **Filename matters more than content.** `AppConfigurationLoaderFactory` routes files
     purely by glob, independent of what's inside them:
@@ -126,6 +128,7 @@ OpenMRS — missing any one produces a different failure mode:
     `"patientDashboard"` when no `dashboard` request parameter is given (the normal case).
 
   All three are covered by `ModuleWiringTest` (§7).
+
 - **AJAX endpoints** (`NeuroAssessmentRestController`, plain Spring MVC `@Controller`, not a
   DispatcherServlet REST resource): `neuroAssessment.form` (latest GCS), `checkAlerts.form`,
   `addNeuroAssessment.form` (GET renders a form fragment, POST saves via
@@ -168,4 +171,4 @@ Test layers:
   database (§3) — functional as an API contract, not yet wired to real records.
 - `getDetailedSurgicalHistory` currently just delegates to `getSurgicalHistory` — the
   distinction (presumably richer surgical detail) isn't yet implemented.
-"# Neurosurgery-patientview-OpenMRS-module" 
+  "# Neurosurgery-patientview-OpenMRS-module"
