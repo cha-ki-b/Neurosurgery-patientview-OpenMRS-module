@@ -1,0 +1,68 @@
+# orthanc-docker-compose.yml
+#
+# SECURITY UPDATE: all credentials now come from a .env file (see .env.example in this
+# folder) instead of being hardcoded here. Never commit a real .env file - it is already
+# listed in .gitignore.
+
+services:
+  orthanc-db:
+    image: postgres:13-alpine # Use an ARM64 compatible PostgreSQL image for efficiency
+    container_name: orthanc-postgres-db
+    restart: always
+    environment:
+      POSTGRES_DB: orthanc
+      POSTGRES_USER: orthanc
+      POSTGRES_PASSWORD: ${ORTHANC_DB_PASSWORD:?Set ORTHANC_DB_PASSWORD in your .env file}
+    volumes:
+      - orthanc_postgres_data:/var/lib/postgresql/data # Persistent volume for PostgreSQL data
+    networks:
+      - openmrs_neuro_network
+    healthcheck: # Ensures PostgreSQL is fully ready
+      test: ["CMD", "pg_isready", "-U", "$$POSTGRES_USER", "-d", "$$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  orthanc:
+    image: orthancteam/orthanc:latest # Recommended ARM64 compatible image
+    container_name: orthanc-pacs
+    restart: always
+    ports:
+      # DICOM C-STORE/C-FIND/C-MOVE port: this genuinely needs to be reachable by imaging
+      # modalities/scanners, so it stays published on all interfaces. In production, restrict
+      # this at the firewall/security-group level to the known IP ranges of your imaging
+      # equipment - do not leave it open to the whole internet. Consider DICOM TLS
+      # (Orthanc's DicomTlsEnabled) for an added layer once modality support is confirmed.
+      - "4242:4242"
+      # HTTP REST API / Explorer: localhost-only. Public/browser access goes through the
+      # nginx reverse proxy on 443. Comment this out entirely once that path is confirmed.
+      - "127.0.0.1:8042:8042"
+    environment:
+      ORTHANC__NAME: "OpenMRS_Orthanc_PACS"
+      ORTHANC__DICOM_AET: "ORTHANC"
+      ORTHANC__REMOTE_ACCESS_ALLOWED: "true"
+      ORTHANC__AUTHENTICATION_ENABLED: "true"
+      ORTHANC__REGISTERED_USERS: '{"orthanc": "${ORTHANC_ADMIN_PASSWORD:?Set ORTHANC_ADMIN_PASSWORD in your .env file}"}'
+      ORTHANC__POSTGRESQL__ENABLE_INDEX: "true"
+      ORTHANC__POSTGRESQL__ENABLE_STORAGE: "true"
+      ORTHANC__POSTGRESQL__HOST: orthanc-db
+      ORTHANC__POSTGRESQL__PORT: "5432"
+      ORTHANC__POSTGRESQL__DATABASE: orthanc
+      ORTHANC__POSTGRESQL__USERNAME: orthanc
+      ORTHANC__POSTGRESQL__PASSWORD: ${ORTHANC_DB_PASSWORD:?Set ORTHANC_DB_PASSWORD in your .env file}
+      ORTHANC__PLUGINS:
+    volumes:
+      - orthanc_data:/var/lib/orthanc
+    networks:
+      - openmrs_neuro_network
+    depends_on:
+      orthanc-db:
+        condition: service_healthy
+
+networks:
+  openmrs_neuro_network:
+    external: true # created once via: docker network create openmrs_neuro_network
+
+volumes:
+  orthanc_postgres_data:
+  orthanc_data:

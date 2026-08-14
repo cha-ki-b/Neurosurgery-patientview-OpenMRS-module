@@ -1,8 +1,30 @@
-C:\Users\belam\Downloads\patientview-fixed (4)\patientview\api\src\main\java\org\openmrs\module\patientview\api\impl\PatientviewServiceImpl.java
-C:\Users\belam\Downloads\patientview-fixed (4)\patientview\api\src\main\java\org\openmrs\module\patientview\api\dao\PatientviewDao.java
-C:\Users\belam\Downloads\patientview-fixed (4)\patientview\api\src\main\java\org\openmrs\module\patientview\api\dao\PatientviewDAOImpl.java
-C:\Users\belam\Downloads\patientview-fixed (4)\patientview\api\src\main\java\org\openmrs\module\patientview\api\model\SurgicalHistory.java
-C:\Users\belam\Downloads\patientview-fixed (4)\patientview\api\src\main\java\org\openmrs\module\patientview\PatientViewActivator.java
-C:\Users\belam\Downloads\patientview-fixed (4)\patientview\api\src\main\java\org\openmrs\module\patientview\api\model\NeuroAssessment.java
-C:\Users\belam\Downloads\patientview-fixed (4)\patientview\api\src\main\java\org\openmrs\module\patientview\api\PatientviewService.java
-C:\Users\belam\Downloads\patientview-fixed (4)\patientview\api\src\main\java\org\openmrs\module\patientview\Item.java
+<<<<<<< HEAD
+C:\Users\belam\Downloads\neuro-patientview-1.2.0\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\model\NeuroExamDetail.java
+C:\Users\belam\Downloads\neuro-patientview-1.2.0\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\dao\PatientviewDao.java
+C:\Users\belam\Downloads\neuro-patientview-1.2.0\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\model\NeurosurgicalDiagnosis.java
+C:\Users\belam\Downloads\neuro-patientview-1.2.0\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\impl\PatientviewServiceImpl.java
+C:\Users\belam\Downloads\neuro-patientview-1.2.0\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\Item.java
+C:\Users\belam\Downloads\neuro-patientview-1.2.0\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\PatientViewActivator.java
+C:\Users\belam\Downloads\neuro-patientview-1.2.0\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\dao\PatientviewDAOImpl.java
+C:\Users\belam\Downloads\neuro-patientview-1.2.0\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\model\MedicalHistory.java
+C:\Users\belam\Downloads\neuro-patientview-1.2.0\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\model\Pathology.java
+C:\Users\belam\Downloads\neuro-patientview-1.2.0\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\model\VitalSigns.java
+C:\Users\belam\Downloads\neuro-patientview-1.2.0\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\model\NeuroAssessment.java
+C:\Users\belam\Downloads\neuro-patientview-1.2.0\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\model\SurgicalHistory.java
+C:\Users\belam\Downloads\neuro-patientview-1.2.0\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\PatientviewPrivileges.java
+C:\Users\belam\Downloads\neuro-patientview-1.2.0\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\model\AdmissionContext.java
+C:\Users\belam\Downloads\neuro-patientview-1.2.0\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\PatientviewService.java
+=======
+C:\Users\belam\Downloads\neuro-patientview-1.1.0-fixed\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\impl\PatientviewServiceImpl.java
+C:\Users\belam\Downloads\neuro-patientview-1.1.0-fixed\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\model\VitalSigns.java
+C:\Users\belam\Downloads\neuro-patientview-1.1.0-fixed\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\model\SurgicalHistory.java
+C:\Users\belam\Downloads\neuro-patientview-1.1.0-fixed\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\model\NeuroAssessment.java
+C:\Users\belam\Downloads\neuro-patientview-1.1.0-fixed\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\Item.java
+C:\Users\belam\Downloads\neuro-patientview-1.1.0-fixed\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\dao\PatientviewDAOImpl.java
+C:\Users\belam\Downloads\neuro-patientview-1.1.0-fixed\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\dao\PatientviewDao.java
+C:\Users\belam\Downloads\neuro-patientview-1.1.0-fixed\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\model\NeuroExamDetail.java
+C:\Users\belam\Downloads\neuro-patientview-1.1.0-fixed\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\PatientviewService.java
+C:\Users\belam\Downloads\neuro-patientview-1.1.0-fixed\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\PatientViewActivator.java
+C:\Users\belam\Downloads\neuro-patientview-1.1.0-fixed\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\model\MedicalHistory.java
+C:\Users\belam\Downloads\neuro-patientview-1.1.0-fixed\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\model\AdmissionContext.java
+>>>>>>> 72357f4195852fcce719c2ae19b1a4a78c735bde

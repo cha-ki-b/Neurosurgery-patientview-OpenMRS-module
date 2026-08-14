@@ -14,6 +14,7 @@ public class SurgicalHistory {
     private Date datePerformed;
     private String surgeon;
     private String outcome;
+    private String location;
     private String notes;
     private User creator;
     private Date dateCreated;
@@ -38,6 +39,9 @@ public class SurgicalHistory {
 
     public String getOutcome() { return outcome; }
     public void setOutcome(String outcome) { this.outcome = outcome; }
+
+    public String getLocation() { return location; }
+    public void setLocation(String location) { this.location = location; }
 
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }

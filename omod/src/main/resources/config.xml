@@ -4,7 +4,7 @@
     <!-- Basic Module Properties -->
     <id>patientview</id>
     <name>Neurosurgery Patient View Override</name>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.2.1</version>
     <package>org.openmrs.module.patientview</package>
     <author>Hani</author>
     <description>
@@ -37,7 +37,32 @@
     <mappingFiles>
         org/openmrs/module/patientview/api/model/NeuroAssessment.hbm.xml
         org/openmrs/module/patientview/api/model/SurgicalHistory.hbm.xml
+        org/openmrs/module/patientview/api/model/MedicalHistory.hbm.xml
+        org/openmrs/module/patientview/api/model/AdmissionContext.hbm.xml
+        org/openmrs/module/patientview/api/model/VitalSigns.hbm.xml
+        org/openmrs/module/patientview/api/model/NeuroExamDetail.hbm.xml
+        org/openmrs/module/patientview/api/model/NeurosurgicalDiagnosis.hbm.xml
+        org/openmrs/module/patientview/api/model/Pathology.hbm.xml
     </mappingFiles>
+
+    <!-- Required Privileges -->
+    <privilege>
+        <name>View Neurosurgery Data</name>
+        <description>Able to view neurosurgery patient-view records (antecedents, exams, diagnosis, pathology, etc.)</description>
+    </privilege>
+    <privilege>
+        <name>Manage Neurosurgery Data</name>
+        <description>Able to create and update neurosurgery patient-view records</description>
+    </privilege>
+    <privilege>
+        <name>App: patientview.neurosurgeryDashboard</name>
+        <description>Able to see and open the Neurosurgery Dashboard (read-only access) - assign to nurses</description>
+    </privilege>
+    <privilege>
+        <name>App: patientview.neurosurgeryDashboard.manage</name>
+        <description>Able to add and edit neurosurgery patient-view records from the dashboard - assign to surgeons and radiologists (in addition to the view privilege above)</description>
+    </privilege>
+    <!-- /Required Privileges -->
 
     <!-- Messages -->
     <messages>

@@ -13,6 +13,7 @@
         <property name="datePerformed" type="timestamp" column="date_performed"/>
         <property name="surgeon" type="string" column="surgeon"/>
         <property name="outcome" type="string" column="outcome"/>
+        <property name="location" type="string" column="location"/>
         <property name="notes" type="string" column="notes" length="1000"/>
         <many-to-one name="creator" class="org.openmrs.User" column="creator" not-null="true"/>
         <property name="dateCreated" type="timestamp" column="date_created" not-null="true"/>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="org.openmrs.module.patientview.api.model">
+    <class name="AdmissionContext" table="patientview_admission_context">
+        <id name="id" type="int" column="admission_context_id">
+            <generator class="native"/>
+        </id>
+        <property name="uuid" type="string" column="uuid" length="38" unique="true"/>
+        <many-to-one name="patient" class="org.openmrs.Patient" column="patient_id" not-null="true"/>
+        <property name="admissionReason" type="string" column="admission_reason" length="500"/>
+        <property name="symptomOnsetDate" type="date" column="symptom_onset_date"/>
+        <property name="diagnosisDelayDays" type="int" column="diagnosis_delay_days"/>
+        <property name="admissionDiagnosis" type="string" column="admission_diagnosis" length="500"/>
+        <property name="primaryDiagnosis" type="string" column="primary_diagnosis" length="500"/>
+        <property name="secondaryDiagnoses" type="string" column="secondary_diagnoses" length="1000"/>
+        <property name="profession" type="string" column="profession"/>
+        <property name="referringPhysician" type="string" column="referring_physician"/>
+        <property name="responsibleNeurosurgeon" type="string" column="responsible_neurosurgeon"/>
+        <many-to-one name="creator" class="org.openmrs.User" column="creator" not-null="true"/>
+        <property name="dateCreated" type="timestamp" column="date_created" not-null="true"/>
+    </class>
+</hibernate-mapping>

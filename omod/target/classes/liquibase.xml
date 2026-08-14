@@ -105,4 +105,449 @@
             referencedTableName="users" referencedColumnNames="user_id"/>
     </changeSet>
 
+    <!-- ============================================================
+         Phase 1: Contexte & Antecedents, Examen clinique & neurologique
+         ============================================================ -->
+
+    <changeSet id="patientview-2026-07-28-01" author="patientview-roadmap">
+        <comment>Add "Localisation" field to surgical history (Fiche section 3 - Antecedents chirurgicaux)</comment>
+        <addColumn tableName="patientview_surgical_history">
+            <column name="location" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="patientview-2026-07-28-02" author="patientview-roadmap">
+        <comment>Add Karnofsky Performance Status to the existing GCS/neuro assessment record (Fiche section 5 - Etat fonctionnel, recorded alongside consciousness at the same exam)</comment>
+        <addColumn tableName="patientview_neuro_assessment">
+            <column name="karnofsky_score" type="int"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="patientview-2026-07-28-03" author="patientview-roadmap">
+        <comment>Creating the patientview_medical_history table (Fiche section 3 - Antecedents medicaux). One current record per patient, editable in place.</comment>
+        <createTable tableName="patientview_medical_history">
+            <column name="medical_history_id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="uuid" type="char(38)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="patient_id" type="int">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="diabetes" type="boolean" defaultValueBoolean="false"/>
+            <column name="hypertension" type="boolean" defaultValueBoolean="false"/>
+            <column name="epilepsy" type="boolean" defaultValueBoolean="false"/>
+            <column name="stroke" type="boolean" defaultValueBoolean="false"/>
+            <column name="heart_disease" type="boolean" defaultValueBoolean="false"/>
+            <column name="renal_failure" type="boolean" defaultValueBoolean="false"/>
+            <column name="allergies" type="varchar(500)"/>
+            <column name="chronic_treatment" type="varchar(500)"/>
+            <column name="other_history" type="varchar(500)"/>
+            <column name="creator" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_created" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="changed_by" type="int"/>
+            <column name="date_changed" type="datetime"/>
+        </createTable>
+        <addForeignKeyConstraint constraintName="patientview_medhist_patient_fk"
+            baseTableName="patientview_medical_history" baseColumnNames="patient_id"
+            referencedTableName="patient" referencedColumnNames="patient_id"/>
+        <addForeignKeyConstraint constraintName="patientview_medhist_creator_fk"
+            baseTableName="patientview_medical_history" baseColumnNames="creator"
+            referencedTableName="users" referencedColumnNames="user_id"/>
+        <addForeignKeyConstraint constraintName="patientview_medhist_changedby_fk"
+            baseTableName="patientview_medical_history" baseColumnNames="changed_by"
+            referencedTableName="users" referencedColumnNames="user_id"/>
+    </changeSet>
+
+    <changeSet id="patientview-2026-07-28-04" author="patientview-roadmap">
+        <comment>Creating the patientview_admission_context table (Fiche section 2 - Motif d'hospitalisation, plus the non-redundant parts of section 1 - Informations administratives). One row per admission episode.</comment>
+        <createTable tableName="patientview_admission_context">
+            <column name="admission_context_id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="uuid" type="char(38)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="patient_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="admission_reason" type="varchar(500)"/>
+            <column name="symptom_onset_date" type="date"/>
+            <column name="diagnosis_delay_days" type="int"/>
+            <column name="admission_diagnosis" type="varchar(500)"/>
+            <column name="primary_diagnosis" type="varchar(500)"/>
+            <column name="secondary_diagnoses" type="varchar(1000)"/>
+            <column name="profession" type="varchar(255)"/>
+            <column name="referring_physician" type="varchar(255)"/>
+            <column name="responsible_neurosurgeon" type="varchar(255)"/>
+            <column name="creator" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_created" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="patientview_admctx_patient_fk"
+            baseTableName="patientview_admission_context" baseColumnNames="patient_id"
+            referencedTableName="patient" referencedColumnNames="patient_id"/>
+        <addForeignKeyConstraint constraintName="patientview_admctx_creator_fk"
+            baseTableName="patientview_admission_context" baseColumnNames="creator"
+            referencedTableName="users" referencedColumnNames="user_id"/>
+    </changeSet>
+
+    <changeSet id="patientview-2026-07-28-05" author="patientview-roadmap">
+        <comment>Creating the patientview_vital_signs table (Fiche section 4 - Examen clinique general)</comment>
+        <createTable tableName="patientview_vital_signs">
+            <column name="vital_signs_id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="uuid" type="char(38)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="patient_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="exam_date" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="temperature" type="decimal(4,1)"/>
+            <column name="bp_systolic" type="int"/>
+            <column name="bp_diastolic" type="int"/>
+            <column name="heart_rate" type="int"/>
+            <column name="respiratory_rate" type="int"/>
+            <column name="spo2" type="int"/>
+            <column name="weight_kg" type="decimal(5,1)"/>
+            <column name="height_cm" type="decimal(5,1)"/>
+            <column name="bmi" type="decimal(4,1)"/>
+            <column name="creator" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_created" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="patientview_vitals_patient_fk"
+            baseTableName="patientview_vital_signs" baseColumnNames="patient_id"
+            referencedTableName="patient" referencedColumnNames="patient_id"/>
+        <addForeignKeyConstraint constraintName="patientview_vitals_creator_fk"
+            baseTableName="patientview_vital_signs" baseColumnNames="creator"
+            referencedTableName="users" referencedColumnNames="user_id"/>
+    </changeSet>
+
+    <changeSet id="patientview-2026-07-28-06" author="patientview-roadmap">
+        <comment>Creating the patientview_neuro_exam_detail table (Fiche section 5 - Examen neurologique detaille)</comment>
+        <createTable tableName="patientview_neuro_exam_detail">
+            <column name="neuro_exam_detail_id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="uuid" type="char(38)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="patient_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="exam_date" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="orientation" type="varchar(255)"/>
+            <column name="language" type="varchar(255)"/>
+            <column name="memory" type="varchar(255)"/>
+            <column name="cranial_nerves" type="varchar(500)"/>
+            <column name="motor_deficit" type="varchar(500)"/>
+            <column name="sensory_deficit" type="varchar(500)"/>
+            <column name="reflexes" type="varchar(255)"/>
+            <column name="plantar_reflex" type="varchar(100)"/>
+            <column name="coordination" type="varchar(255)"/>
+            <column name="gait" type="varchar(255)"/>
+            <column name="balance" type="varchar(255)"/>
+            <column name="cerebellar_signs" type="boolean" defaultValueBoolean="false"/>
+            <column name="pyramidal_syndrome" type="boolean" defaultValueBoolean="false"/>
+            <column name="meningeal_syndrome" type="boolean" defaultValueBoolean="false"/>
+            <column name="seizures" type="boolean" defaultValueBoolean="false"/>
+            <column name="headache" type="boolean" defaultValueBoolean="false"/>
+            <column name="vomiting" type="boolean" defaultValueBoolean="false"/>
+            <column name="visual_disturbances" type="boolean" defaultValueBoolean="false"/>
+            <column name="sphincter_disturbances" type="boolean" defaultValueBoolean="false"/>
+            <column name="notes" type="varchar(1000)"/>
+            <column name="creator" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_created" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="patientview_nexam_patient_fk"
+            baseTableName="patientview_neuro_exam_detail" baseColumnNames="patient_id"
+            referencedTableName="patient" referencedColumnNames="patient_id"/>
+        <addForeignKeyConstraint constraintName="patientview_nexam_creator_fk"
+            baseTableName="patientview_neuro_exam_detail" baseColumnNames="creator"
+            referencedTableName="users" referencedColumnNames="user_id"/>
+    </changeSet>
+
+<<<<<<< HEAD
+    <!-- ============================================================
+         Phase 2: security/reliability hardening + Diagnostic & Anatomopathologie
+         ============================================================ -->
+
+    <changeSet id="patientview-2026-08-10-00" author="patientview-roadmap">
+        <comment>
+            Ensures a named, non-unique index on patient_id exists before we touch anything else in
+            this table below, so that when patientview_medhist_patient_fk is dropped and recreated
+            in patientview-2026-08-10-01, MySQL attaches it to this explicit index rather than
+            silently auto-creating its own unnamed one.
+        </comment>
+        <createIndex indexName="idx_patientview_medical_history_patient" tableName="patientview_medical_history">
+            <column name="patient_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="patientview-2026-08-10-01" author="patientview-roadmap">
+        <validCheckSum>8:630aa09ce9504a3cb72fde081d3ef62d</validCheckSum>
+        <validCheckSum>1:any</validCheckSum>
+        <comment>
+            Non-repudiation fix: patientview_medical_history was originally one mutable row per
+            patient (unique patient_id), so an edit silently overwrote the previous values with
+            no trace of who changed what. Drop the uniqueness constraint so saves can append a
+            new row instead of updating in place, matching the append-only pattern already used
+            by every other table in this module. The DAO now always inserts; "current" state is
+            simply the most recent row per patient.
+
+            This changeset's content is now effectively frozen: it went through two revisions
+            after already having run successfully in at least one real deployment (first a plain
+            DROP INDEX, which hit MySQL error 1553; then this drop-FK/drop-index/recreate-FK
+            version). Editing an already-executed changeset's SQL doesn't change what already ran
+            - Liquibase treats a changeset ID as permanently "done" once any checksum for it is
+            recorded, and validCheckSum only silences the mismatch warning, it does not trigger a
+            re-run. The &lt;validCheckSum&gt;1:any&lt;/validCheckSum&gt; entry above is there so this stops being a landmine for
+            every future edit to this comment. The real fix, that actually re-verifies and repairs
+            the schema on every startup regardless of which partial state a given database is in,
+            is the new changeset below (patientview-2026-08-12-01) - treat that one as the source
+            of truth for this migration, not this one.
+        </comment>
+        <dropForeignKeyConstraint baseTableName="patientview_medical_history"
+            constraintName="patientview_medhist_patient_fk"/>
+        <sql>
+            SET @uq_name = (
+                SELECT tc.CONSTRAINT_NAME
+                FROM information_schema.TABLE_CONSTRAINTS tc
+                JOIN information_schema.KEY_COLUMN_USAGE kcu
+                  ON kcu.CONSTRAINT_NAME = tc.CONSTRAINT_NAME
+                 AND kcu.TABLE_SCHEMA = tc.TABLE_SCHEMA
+                 AND kcu.TABLE_NAME = tc.TABLE_NAME
+                WHERE tc.TABLE_SCHEMA = DATABASE()
+                  AND tc.TABLE_NAME = 'patientview_medical_history'
+                  AND tc.CONSTRAINT_TYPE = 'UNIQUE'
+                  AND kcu.COLUMN_NAME = 'patient_id'
+                LIMIT 1
+            );
+            SET @uq_drop_sql = IF(@uq_name IS NULL, 'SELECT 1',
+                CONCAT('ALTER TABLE patientview_medical_history DROP INDEX `', @uq_name, '`'));
+            PREPARE uq_drop_stmt FROM @uq_drop_sql;
+            EXECUTE uq_drop_stmt;
+            DEALLOCATE PREPARE uq_drop_stmt;
+        </sql>
+        <addForeignKeyConstraint constraintName="patientview_medhist_patient_fk"
+            baseTableName="patientview_medical_history" baseColumnNames="patient_id"
+            referencedTableName="patient" referencedColumnNames="patient_id"/>
+        <rollback>
+            <!-- Not reversible in general (the original unique constraint's name is not
+                 recoverable), and not needed in practice - reintroducing uniqueness here is only
+                 relevant to Phase 2 development, not to a real deployment's rollback path. -->
+        </rollback>
+    </changeSet>
+
+    <changeSet id="patientview-2026-08-12-01" author="patientview-roadmap" runOnChange="true">
+        <comment>
+            The actual, authoritative fix for patientview_medical_history's non-repudiation
+            migration - written to be fully idempotent and state-based (it checks what currently
+            exists rather than assuming what an earlier changeset did or didn't manage to do), so
+            it reaches the correct end state no matter which of these three situations a given
+            database is in: (1) never touched by any earlier version of this migration, (2) fully
+            migrated already, or (3) partially migrated by an earlier, since-corrected attempt.
+
+            End state, verified fresh on every run: no unique constraint on
+            patientview_medical_history.patient_id, an ordinary supporting index on that column
+            (idx_patientview_medical_history_patient), and patientview_medhist_patient_fk present.
+
+            runOnChange="true" so that if this logic itself ever needs a fix, editing it here is
+            enough - Liquibase re-runs a runOnChange changeset whenever its checksum changes,
+            unlike the frozen one above.
+        </comment>
+        <sql>
+            SET @uq_name = (
+                SELECT tc.CONSTRAINT_NAME
+                FROM information_schema.TABLE_CONSTRAINTS tc
+                JOIN information_schema.KEY_COLUMN_USAGE kcu
+                  ON kcu.CONSTRAINT_NAME = tc.CONSTRAINT_NAME
+                 AND kcu.TABLE_SCHEMA = tc.TABLE_SCHEMA
+                 AND kcu.TABLE_NAME = tc.TABLE_NAME
+                WHERE tc.TABLE_SCHEMA = DATABASE()
+                  AND tc.TABLE_NAME = 'patientview_medical_history'
+                  AND tc.CONSTRAINT_TYPE = 'UNIQUE'
+                  AND kcu.COLUMN_NAME = 'patient_id'
+                LIMIT 1
+            );
+            SET @fk_exists = (
+                SELECT COUNT(*)
+                FROM information_schema.TABLE_CONSTRAINTS
+                WHERE TABLE_SCHEMA = DATABASE()
+                  AND TABLE_NAME = 'patientview_medical_history'
+                  AND CONSTRAINT_NAME = 'patientview_medhist_patient_fk'
+                  AND CONSTRAINT_TYPE = 'FOREIGN KEY'
+            );
+
+            -- Step 1: only touch the FK if it currently exists AND the unique constraint we need
+            -- gone is still there (i.e. it's actually in the way).
+            SET @fk_drop_sql = IF(@fk_exists > 0 AND @uq_name IS NOT NULL,
+                'ALTER TABLE patientview_medical_history DROP FOREIGN KEY patientview_medhist_patient_fk',
+                'SELECT 1');
+            PREPARE fk_drop_stmt FROM @fk_drop_sql;
+            EXECUTE fk_drop_stmt;
+            DEALLOCATE PREPARE fk_drop_stmt;
+
+            -- Step 2: make sure a plain supporting index exists before/regardless of dropping the
+            -- unique one, so nothing ever needs the unique index to satisfy an FK again.
+            SET @plain_idx_exists = (
+                SELECT COUNT(*)
+                FROM information_schema.STATISTICS
+                WHERE TABLE_SCHEMA = DATABASE()
+                  AND TABLE_NAME = 'patientview_medical_history'
+                  AND INDEX_NAME = 'idx_patientview_medical_history_patient'
+            );
+            SET @create_idx_sql = IF(@plain_idx_exists = 0,
+                'CREATE INDEX idx_patientview_medical_history_patient ON patientview_medical_history (patient_id)',
+                'SELECT 1');
+            PREPARE create_idx_stmt FROM @create_idx_sql;
+            EXECUTE create_idx_stmt;
+            DEALLOCATE PREPARE create_idx_stmt;
+
+            -- Step 3: drop the unique constraint if it's still there - safe now regardless of
+            -- whether step 1 just removed the FK or it was never present to begin with.
+            SET @uq_drop_sql = IF(@uq_name IS NULL, 'SELECT 1',
+                CONCAT('ALTER TABLE patientview_medical_history DROP INDEX `', @uq_name, '`'));
+            PREPARE uq_drop_stmt FROM @uq_drop_sql;
+            EXECUTE uq_drop_stmt;
+            DEALLOCATE PREPARE uq_drop_stmt;
+
+            -- Step 4: re-check fresh (don't reuse @fk_exists, which may now be stale) and add the
+            -- FK back if it's missing for any reason, whether this run dropped it or it was
+            -- already missing before this changeset ran at all.
+            SET @fk_exists_now = (
+                SELECT COUNT(*)
+                FROM information_schema.TABLE_CONSTRAINTS
+                WHERE TABLE_SCHEMA = DATABASE()
+                  AND TABLE_NAME = 'patientview_medical_history'
+                  AND CONSTRAINT_NAME = 'patientview_medhist_patient_fk'
+                  AND CONSTRAINT_TYPE = 'FOREIGN KEY'
+            );
+            SET @fk_add_sql = IF(@fk_exists_now = 0,
+                'ALTER TABLE patientview_medical_history ADD CONSTRAINT patientview_medhist_patient_fk FOREIGN KEY (patient_id) REFERENCES patient (patient_id)',
+                'SELECT 1');
+            PREPARE fk_add_stmt FROM @fk_add_sql;
+            EXECUTE fk_add_stmt;
+            DEALLOCATE PREPARE fk_add_stmt;
+        </sql>
+        <rollback>
+            <!-- Not reversible in general (see patientview-2026-08-10-01's rollback note) and not
+                 needed in practice. -->
+        </rollback>
+    </changeSet>
+
+    <changeSet id="patientview-2026-07-30-02" author="patientview-roadmap">
+        <comment>Reliability: index patient_id on every other patientview table so per-patient history lookups (already the dominant query pattern) don't degrade to full table scans as data grows. (patientview_medical_history's index was already created above, ahead of the unique-constraint drop it unblocks.)</comment>
+        <createIndex indexName="idx_patientview_neuro_assessment_patient" tableName="patientview_neuro_assessment">
+            <column name="patient_id"/>
+        </createIndex>
+        <createIndex indexName="idx_patientview_surgical_history_patient" tableName="patientview_surgical_history">
+            <column name="patient_id"/>
+        </createIndex>
+        <createIndex indexName="idx_patientview_admission_context_patient" tableName="patientview_admission_context">
+            <column name="patient_id"/>
+        </createIndex>
+        <createIndex indexName="idx_patientview_vital_signs_patient" tableName="patientview_vital_signs">
+            <column name="patient_id"/>
+        </createIndex>
+        <createIndex indexName="idx_patientview_neuro_exam_detail_patient" tableName="patientview_neuro_exam_detail">
+            <column name="patient_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="patientview-2026-07-30-03" author="patientview-roadmap">
+        <comment>Creating the patientview_neurosurgical_diagnosis table (Fiche section 8). Append-only, most recent row per patient is the current diagnosis.</comment>
+        <createTable tableName="patientview_neurosurgical_diagnosis">
+            <column name="diagnosis_id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="uuid" type="char(38)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="patient_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="diagnosis" type="varchar(500)"/>
+            <column name="lesion_location" type="varchar(255)"/>
+            <column name="laterality" type="varchar(50)"/>
+            <column name="lesion_size" type="varchar(100)"/>
+            <column name="lesion_count" type="int"/>
+            <column name="who_diagnosis" type="varchar(255)"/>
+            <column name="creator" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_created" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="patientview_diag_patient_fk"
+            baseTableName="patientview_neurosurgical_diagnosis" baseColumnNames="patient_id"
+            referencedTableName="patient" referencedColumnNames="patient_id"/>
+        <addForeignKeyConstraint constraintName="patientview_diag_creator_fk"
+            baseTableName="patientview_neurosurgical_diagnosis" baseColumnNames="creator"
+            referencedTableName="users" referencedColumnNames="user_id"/>
+        <createIndex indexName="idx_patientview_diagnosis_patient" tableName="patientview_neurosurgical_diagnosis">
+            <column name="patient_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="patientview-2026-07-30-04" author="patientview-roadmap">
+        <comment>Creating the patientview_pathology table (Fiche section 10, Anatomopathologie). Append-only.</comment>
+        <createTable tableName="patientview_pathology">
+            <column name="pathology_id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="uuid" type="char(38)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="patient_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="study_findings" type="varchar(1000)"/>
+            <column name="who_grade" type="varchar(50)"/>
+            <column name="immunohistochemistry" type="varchar(1000)"/>
+            <column name="molecular_markers" type="varchar(1000)"/>
+            <column name="final_diagnosis" type="varchar(500)"/>
+            <column name="creator" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_created" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="patientview_path_patient_fk"
+            baseTableName="patientview_pathology" baseColumnNames="patient_id"
+            referencedTableName="patient" referencedColumnNames="patient_id"/>
+        <addForeignKeyConstraint constraintName="patientview_path_creator_fk"
+            baseTableName="patientview_pathology" baseColumnNames="creator"
+            referencedTableName="users" referencedColumnNames="user_id"/>
+        <createIndex indexName="idx_patientview_pathology_patient" tableName="patientview_pathology">
+            <column name="patient_id"/>
+        </createIndex>
+    </changeSet>
+
+=======
+>>>>>>> 72357f4195852fcce719c2ae19b1a4a78c735bde
 </databaseChangeLog>

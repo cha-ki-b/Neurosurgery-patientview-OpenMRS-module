@@ -1,0 +1,31 @@
+# nginx-docker-compose.yml
+#
+# The single externally-facing HTTP(S) entrypoint for both OpenMRS and the Orthanc
+# Explorer/REST API. Terminates TLS so all browser <-> server traffic (login credentials,
+# session cookies, clinical data) is encrypted, then forwards plaintext to the two
+# internal-only services over the private docker network.
+#
+# Start order: 1) docker network create openmrs_neuro_network (once)
+#              2) docker compose -f openmrs-docker-compose.yml up -d
+#              3) docker compose -f orthanc-docker-compose.yml up -d
+#              4) put a cert+key in ./nginx/certs (see generate-dev-cert.sh for a
+#                 self-signed dev certificate; use a real CA/Let's Encrypt cert in production)
+#              5) docker compose -f nginx-docker-compose.yml up -d
+
+services:
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: neuro-reverse-proxy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+    networks:
+      - openmrs_neuro_network
+
+networks:
+  openmrs_neuro_network:
+    external: true

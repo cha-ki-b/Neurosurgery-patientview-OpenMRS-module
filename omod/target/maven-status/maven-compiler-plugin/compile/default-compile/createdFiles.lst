@@ -1,3 +1,26 @@
 org\openmrs\module\patientview\web\controller\NeuroAssessmentRestController.class
-org\openmrs\module\patientview\page\controller\clinicianfacing\PatientPageController.class
 org\openmrs\module\patientview\fragment\controller\UsersFragmentController.class
+<<<<<<< HEAD
+org\openmrs\module\patientview\web\controller\NeurosurgicalDiagnosisRestController.class
+org\openmrs\module\patientview\page\controller\clinicianfacing\PatientPageController.class
+org\openmrs\module\patientview\web\controller\SurgicalHistoryRestController.class
+org\openmrs\module\patientview\page\controller\clinicianfacing\AnatomopathologiePageController.class
+org\openmrs\module\patientview\web\controller\NeuroExamDetailRestController.class
+org\openmrs\module\patientview\web\controller\PatientviewExceptionHandler.class
+org\openmrs\module\patientview\web\controller\PathologyRestController.class
+org\openmrs\module\patientview\web\controller\VitalSignsRestController.class
+org\openmrs\module\patientview\page\controller\clinicianfacing\ExamenCliniquePageController.class
+org\openmrs\module\patientview\page\controller\clinicianfacing\AntecedentsPageController.class
+org\openmrs\module\patientview\web\controller\AdmissionContextRestController.class
+org\openmrs\module\patientview\page\controller\clinicianfacing\DiagnosticPageController.class
+org\openmrs\module\patientview\web\controller\MedicalHistoryRestController.class
+=======
+org\openmrs\module\patientview\web\controller\VitalSignsRestController.class
+org\openmrs\module\patientview\page\controller\clinicianfacing\ExamenCliniquePageController.class
+org\openmrs\module\patientview\page\controller\clinicianfacing\AntecedentsPageController.class
+org\openmrs\module\patientview\page\controller\clinicianfacing\PatientPageController.class
+org\openmrs\module\patientview\web\controller\AdmissionContextRestController.class
+org\openmrs\module\patientview\web\controller\MedicalHistoryRestController.class
+org\openmrs\module\patientview\web\controller\SurgicalHistoryRestController.class
+org\openmrs\module\patientview\web\controller\NeuroExamDetailRestController.class
+>>>>>>> 72357f4195852fcce719c2ae19b1a4a78c735bde

@@ -14,6 +14,7 @@
         <property name="verbalResponse" type="int" column="verbal_response"/>
         <property name="motorResponse" type="int" column="motor_response"/>
         <property name="gcsTotal" type="int" column="gcs_total"/>
+        <property name="karnofskyScore" type="int" column="karnofsky_score"/>
         <property name="notes" type="string" column="notes" length="1000"/>
         <many-to-one name="creator" class="org.openmrs.User" column="creator" not-null="true"/>
         <property name="dateCreated" type="timestamp" column="date_created" not-null="true"/>

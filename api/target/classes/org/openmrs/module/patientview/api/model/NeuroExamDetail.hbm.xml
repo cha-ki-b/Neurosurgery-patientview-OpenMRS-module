@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="org.openmrs.module.patientview.api.model">
+    <class name="NeuroExamDetail" table="patientview_neuro_exam_detail">
+        <id name="id" type="int" column="neuro_exam_detail_id">
+            <generator class="native"/>
+        </id>
+        <property name="uuid" type="string" column="uuid" length="38" unique="true"/>
+        <many-to-one name="patient" class="org.openmrs.Patient" column="patient_id" not-null="true"/>
+        <property name="examDate" type="timestamp" column="exam_date" not-null="true"/>
+        <property name="orientation" type="string" column="orientation"/>
+        <property name="language" type="string" column="language"/>
+        <property name="memory" type="string" column="memory"/>
+        <property name="cranialNerves" type="string" column="cranial_nerves" length="500"/>
+        <property name="motorDeficit" type="string" column="motor_deficit" length="500"/>
+        <property name="sensoryDeficit" type="string" column="sensory_deficit" length="500"/>
+        <property name="reflexes" type="string" column="reflexes"/>
+        <property name="plantarReflex" type="string" column="plantar_reflex"/>
+        <property name="coordination" type="string" column="coordination"/>
+        <property name="gait" type="string" column="gait"/>
+        <property name="balance" type="string" column="balance"/>
+        <property name="cerebellarSigns" type="boolean" column="cerebellar_signs"/>
+        <property name="pyramidalSyndrome" type="boolean" column="pyramidal_syndrome"/>
+        <property name="meningealSyndrome" type="boolean" column="meningeal_syndrome"/>
+        <property name="seizures" type="boolean" column="seizures"/>
+        <property name="headache" type="boolean" column="headache"/>
+        <property name="vomiting" type="boolean" column="vomiting"/>
+        <property name="visualDisturbances" type="boolean" column="visual_disturbances"/>
+        <property name="sphincterDisturbances" type="boolean" column="sphincter_disturbances"/>
+        <property name="notes" type="string" column="notes" length="1000"/>
+        <many-to-one name="creator" class="org.openmrs.User" column="creator" not-null="true"/>
+        <property name="dateCreated" type="timestamp" column="date_created" not-null="true"/>
+    </class>
+</hibernate-mapping>

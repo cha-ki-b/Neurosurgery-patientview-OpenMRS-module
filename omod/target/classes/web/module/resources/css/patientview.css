@@ -1,15 +1,7 @@
 /* Neurosurgery Patient Dashboard Styles */
 
-.neurosurgery-patient-dashboard {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 20px;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f8f9fa;
-}
-
 /* Patient Header */
-.patient-header {
+.neuro-patient-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
@@ -21,17 +13,17 @@
     box-shadow: 0 4px 15px rgba(44, 90, 160, 0.3);
 }
 
-.patient-info h1 {
+.neuro-patient-info h1 {
     margin: 0 0 10px 0;
     font-size: 2.2em;
     font-weight: 600;
 }
 
-.patient-identifiers {
+.neuro-patient-identifiers {
     margin: 8px 0;
 }
 
-.identifier {
+.neuro-identifier {
     background: rgba(255, 255, 255, 0.2);
     padding: 4px 12px;
     border-radius: 6px;
@@ -39,13 +31,13 @@
     font-size: 0.9em;
 }
 
-.patient-demographics {
+.neuro-patient-demographics {
     color: rgba(255, 255, 255, 0.9);
     font-size: 1.1em;
     margin-top: 10px;
 }
 
-.patient-alerts .alert-panel {
+.neuro-patient-alerts .neuro-alert-panel {
     background: rgba(255, 255, 255, 0.95);
     color: #dc3545;
     padding: 15px;
@@ -53,13 +45,13 @@
     border-left: 4px solid #dc3545;
 }
 
-.alert-item {
+.neuro-alert-item {
     margin: 5px 0;
     font-weight: 500;
 }
 
 /* Dashboard Grid */
-.dashboard-grid {
+.neuro-dashboard-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
     gap: 20px;
@@ -67,7 +59,7 @@
 }
 
 /* Panel Styles */
-.panel {
+.neuro-panel {
     background: white;
     border-radius: 12px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -75,12 +67,12 @@
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.panel:hover {
+.neuro-panel:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
-.panel-header {
+.neuro-panel-header {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     padding: 20px;
     border-bottom: 2px solid #dee2e6;
@@ -89,26 +81,26 @@
     align-items: center;
 }
 
-.panel-header h2 {
+.neuro-panel-header h2 {
     margin: 0;
     font-size: 1.3em;
     color: #495057;
     font-weight: 600;
 }
 
-.panel-content {
+.neuro-panel-content {
     padding: 20px;
 }
 
 /* Neurological Status Panel */
-.neuro-status .gcs-display {
+.neuro-status .neuro-gcs-display {
     display: flex;
     align-items: center;
     gap: 20px;
     margin-bottom: 20px;
 }
 
-.gcs-score {
+.neuro-gcs-score {
     text-align: center;
     background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
     color: white;
@@ -117,21 +109,21 @@
     min-width: 100px;
 }
 
-.score-value {
+.neuro-score-value {
     display: block;
     font-size: 2.5em;
     font-weight: bold;
     line-height: 1;
 }
 
-.score-label {
+.neuro-score-label {
     display: block;
     font-size: 0.9em;
     margin-top: 5px;
     opacity: 0.9;
 }
 
-.gcs-breakdown {
+.neuro-gcs-breakdown {
     display: flex;
     flex-direction: column;
     gap: 5px;
@@ -139,42 +131,20 @@
     font-size: 1.1em;
 }
 
-.assessment-date {
+.neuro-assessment-date {
     color: #6c757d;
     font-size: 0.9em;
     margin-left: auto;
 }
 
-.recent-assessments {
-    border-top: 1px solid #dee2e6;
-    padding-top: 15px;
-    margin-top: 15px;
-}
-
-.assessment-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.assessment-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 12px;
-    background: #f8f9fa;
-    border-radius: 6px;
-    font-size: 0.9em;
-}
-
 /* Surgical History Panel */
-.surgical-timeline {
+.neuro-surgical-timeline {
     display: flex;
     flex-direction: column;
     gap: 15px;
 }
 
-.surgery-item {
+.neuro-surgery-item {
     display: flex;
     gap: 15px;
     padding: 15px;
@@ -183,116 +153,26 @@
     border-radius: 6px;
 }
 
-.surgery-date {
+.neuro-surgery-date {
     font-weight: 600;
     color: #007bff;
     min-width: 80px;
     font-size: 0.9em;
 }
 
-.procedure-name {
+.neuro-procedure-name {
     font-weight: 600;
     color: #495057;
 }
 
-.surgeon, .outcome {
+.neuro-surgeon, .neuro-outcome {
     font-size: 0.9em;
     color: #6c757d;
     margin-top: 3px;
-}
-
-/* Medications Panel */
-.medication-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.medication-item {
-    padding: 12px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    border-left: 4px solid #17a2b8;
-}
-
-.med-name {
-    font-weight: 600;
-    color: #495057;
-    margin-bottom: 5px;
-}
-
-.med-dosage {
-    color: #17a2b8;
-    font-weight: 500;
-}
-
-.med-frequency {
-    font-size: 0.9em;
-    color: #6c757d;
-    margin-top: 3px;
-}
-
-/* Imaging Panel */
-.imaging-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.imaging-item {
-    padding: 12px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    border-left: 4px solid #ffc107;
-}
-
-.image-type {
-    font-weight: 600;
-    color: #495057;
-}
-
-.image-date {
-    color: #ffc107;
-    font-weight: 500;
-    margin: 5px 0;
-}
-
-.image-findings {
-    font-size: 0.9em;
-    color: #6c757d;
-}
-
-/* Appointments Panel */
-.appointment-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.appointment-item {
-    padding: 12px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    border-left: 4px solid #6f42c1;
-}
-
-.appt-date {
-    font-weight: 600;
-    color: #6f42c1;
-}
-
-.appt-type {
-    color: #495057;
-    margin: 5px 0;
-}
-
-.appt-provider {
-    font-size: 0.9em;
-    color: #6c757d;
 }
 
 /* No Data States */
-.no-data {
+.neuro-no-data {
     text-align: center;
     color: #6c757d;
     font-style: italic;
@@ -300,7 +180,7 @@
 }
 
 /* Buttons */
-.btn {
+.neuro-btn {
     padding: 8px 16px;
     border: none;
     border-radius: 6px;
@@ -312,28 +192,28 @@
     display: inline-block;
 }
 
-.btn-primary {
+.neuro-btn-primary {
     background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
     color: white;
 }
 
-.btn-primary:hover {
+.neuro-btn-primary:hover {
     background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
     transform: translateY(-1px);
 }
 
-.btn-secondary {
+.neuro-btn-secondary {
     background: #6c757d;
     color: white;
 }
 
-.btn-secondary:hover {
+.neuro-btn-secondary:hover {
     background: #545b62;
     transform: translateY(-1px);
 }
 
 /* Quick Actions Bar */
-.quick-actions {
+.neuro-quick-actions {
     display: flex;
     justify-content: center;
     gap: 15px;
@@ -343,7 +223,7 @@
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-.action-btn {
+.neuro-action-btn {
     padding: 12px 24px;
     background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
     color: white;
@@ -354,14 +234,14 @@
     transition: all 0.2s ease;
 }
 
-.action-btn:hover {
+.neuro-action-btn:hover {
     background: linear-gradient(135deg, #20c997 0%, #17a2b8 100%);
     transform: translateY(-2px);
     box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
 }
 
 /* Modal Styles */
-.modal {
+.neuro-modal {
     position: fixed;
     z-index: 1000;
     left: 0;
@@ -372,7 +252,7 @@
     backdrop-filter: blur(5px);
 }
 
-.modal-content {
+.neuro-modal-content {
     background-color: white;
     margin: 5% auto;
     padding: 20px;
@@ -388,7 +268,7 @@
     to { opacity: 1; transform: translateY(0); }
 }
 
-.close {
+.neuro-modal-close {
     color: #aaa;
     float: right;
     font-size: 28px;
@@ -397,33 +277,285 @@
     line-height: 1;
 }
 
-.close:hover {
+.neuro-modal-close:hover {
     color: #000;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    .dashboard-grid {
+    .neuro-dashboard-grid {
         grid-template-columns: 1fr;
     }
     
-    .patient-header {
+    .neuro-patient-header {
         flex-direction: column;
         gap: 15px;
     }
     
-    .gcs-display {
+    .neuro-gcs-display {
         flex-direction: column;
         text-align: center;
     }
     
-    .quick-actions {
+    .neuro-quick-actions {
         flex-wrap: wrap;
         gap: 10px;
     }
     
-    .action-btn {
+    .neuro-action-btn {
         flex: 1;
         min-width: 120px;
+    }
+}
+
+/* ============================================================
+   Phase 1: sidebar navigation layout + forms + tables
+   ============================================================ */
+
+.neuro-layout {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.neuro-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 220px;
+    background: white;
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 20px;
+}
+
+.neuro-nav-item {
+    display: block;
+    padding: 10px 14px;
+    border-radius: 8px;
+    color: #495057;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.95em;
+}
+
+.neuro-nav-item:hover {
+    background: #f1f3f5;
+}
+
+<<<<<<< HEAD
+.neuro-nav-item.neuro-active {
+=======
+.neuro-nav-item.active {
+>>>>>>> 72357f4195852fcce719c2ae19b1a4a78c735bde
+    background: linear-gradient(135deg, #2c5aa0 0%, #1e4176 100%);
+    color: white;
+}
+
+.neuro-nav-item.neuro-nav-disabled {
+    color: #adb5bd;
+    cursor: default;
+}
+
+.neuro-nav-item.neuro-nav-disabled:hover {
+    background: none;
+}
+
+.neuro-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+<<<<<<< HEAD
+.neuro-alerts-banner {
+=======
+.patient-alerts-banner {
+>>>>>>> 72357f4195852fcce719c2ae19b1a4a78c735bde
+    background: #fff3cd;
+    border-left: 4px solid #dc3545;
+    border-radius: 8px;
+    padding: 12px 16px;
+}
+
+<<<<<<< HEAD
+.neuro-karnofsky-score {
+=======
+.karnofsky-score {
+>>>>>>> 72357f4195852fcce719c2ae19b1a4a78c735bde
+    margin-top: 10px;
+    font-size: 1.05em;
+}
+
+/* Forms */
+.neuro-form {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+<<<<<<< HEAD
+.neuro-form-grid {
+=======
+.form-grid {
+>>>>>>> 72357f4195852fcce719c2ae19b1a4a78c735bde
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+<<<<<<< HEAD
+.neuro-form-grid label,
+=======
+.form-grid label,
+>>>>>>> 72357f4195852fcce719c2ae19b1a4a78c735bde
+.neuro-form > label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.9em;
+    color: #495057;
+    font-weight: 500;
+}
+
+<<<<<<< HEAD
+.neuro-form-grid label.neuro-full-width {
+=======
+.form-grid label.full-width {
+>>>>>>> 72357f4195852fcce719c2ae19b1a4a78c735bde
+    grid-column: 1 / -1;
+}
+
+.neuro-form input[type="text"],
+.neuro-form input[type="number"],
+.neuro-form input[type="date"],
+.neuro-form textarea {
+    padding: 8px 10px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-size: 0.95em;
+    font-family: inherit;
+}
+
+.neuro-form textarea {
+    min-height: 60px;
+    resize: vertical;
+}
+
+<<<<<<< HEAD
+.neuro-checklist-grid {
+=======
+.checklist-grid {
+>>>>>>> 72357f4195852fcce719c2ae19b1a4a78c735bde
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+<<<<<<< HEAD
+.neuro-checklist-grid label {
+=======
+.checklist-grid label {
+>>>>>>> 72357f4195852fcce719c2ae19b1a4a78c735bde
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: normal;
+    color: #495057;
+}
+
+/* Record lists (Antecedents, Examen neurologique detaille) */
+<<<<<<< HEAD
+.neuro-record-list {
+=======
+.record-list {
+>>>>>>> 72357f4195852fcce719c2ae19b1a4a78c735bde
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+<<<<<<< HEAD
+.neuro-record-item {
+=======
+.record-item {
+>>>>>>> 72357f4195852fcce719c2ae19b1a4a78c735bde
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #2c5aa0;
+    font-size: 0.9em;
+    color: #495057;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+<<<<<<< HEAD
+.neuro-record-item-date {
+=======
+.record-item-date {
+>>>>>>> 72357f4195852fcce719c2ae19b1a4a78c735bde
+    font-weight: 600;
+    color: #2c5aa0;
+}
+
+.neuro-flags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+<<<<<<< HEAD
+.neuro-flag-tag {
+=======
+.flag-tag {
+>>>>>>> 72357f4195852fcce719c2ae19b1a4a78c735bde
+    background: #dc3545;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.8em;
+}
+
+/* Tables (Constantes, GCS history) */
+.neuro-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9em;
+}
+
+.neuro-table th,
+.neuro-table td {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.neuro-table th {
+    color: #495057;
+    font-weight: 600;
+    background: #f8f9fa;
+}
+
+@media (max-width: 900px) {
+    .neuro-layout {
+        flex-direction: column;
+    }
+
+    .neuro-sidebar {
+        flex-direction: row;
+        flex-wrap: wrap;
+        width: 100%;
+        position: static;
     }
 }

@@ -90,65 +90,6 @@ public class PatientviewServiceImpl extends BaseOpenmrsService implements Patien
     
     @Override
     @Transactional(readOnly = true)
-    public List<Map<String, Object>> getCurrentNeurologicalMedications(Patient patient) {
-        if (patient == null) {
-            return new ArrayList<>();
-        }
-        
-        // Sample medication data
-        List<Map<String, Object>> medications = new ArrayList<>();
-        
-        Map<String, Object> med = new HashMap<>();
-        med.put("name", "Levetiracetam");
-        med.put("dosage", "500mg");
-        med.put("frequency", "Twice daily");
-        medications.add(med);
-        
-        return medications;
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Map<String, Object>> getUpcomingAppointments(Patient patient, int daysAhead) {
-        if (patient == null) {
-            return new ArrayList<>();
-        }
-        
-        // Sample appointment data
-        List<Map<String, Object>> appointments = new ArrayList<>();
-        
-        Map<String, Object> appt = new HashMap<>();
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.DAY_OF_MONTH, 7);
-        appt.put("date", cal.getTime());
-        appt.put("type", "Follow-up");
-        appt.put("provider", "Dr. Smith");
-        appointments.add(appt);
-        
-        return appointments;
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Map<String, Object>> getRecentImaging(Patient patient, int daysBack) {
-        if (patient == null) {
-            return new ArrayList<>();
-        }
-        
-        // Sample imaging data
-        List<Map<String, Object>> imaging = new ArrayList<>();
-        
-        Map<String, Object> study = new HashMap<>();
-        study.put("type", "CT Head");
-        study.put("date", new Date());
-        study.put("findings", "No acute abnormalities");
-        imaging.add(study);
-        
-        return imaging;
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
     public Map<String, Object> getLatestGCS(Patient patient) {
         Map<String, Object> latest = getLatestNeuroAssessment(patient);
         if (latest == null || latest.isEmpty()) {
@@ -159,6 +100,7 @@ public class PatientviewServiceImpl extends BaseOpenmrsService implements Patien
         gcs.put("eyeResponse", latest.get("eyeResponse"));
         gcs.put("verbalResponse", latest.get("verbalResponse"));
         gcs.put("motorResponse", latest.get("motorResponse"));
+        gcs.put("karnofskyScore", latest.get("karnofskyScore"));
         gcs.put("dateRecorded", latest.get("date"));
         return gcs;
     }
@@ -166,25 +108,45 @@ public class PatientviewServiceImpl extends BaseOpenmrsService implements Patien
     @Override
     @Transactional(readOnly = true)
     public String getPrimaryNeurologicalDiagnosis(Patient patient) {
-        if (patient == null) {
+        if (patient == null || dao == null) {
             return "No diagnosis available";
         }
-        
-        // TODO: Implement actual diagnosis lookup
-        return "Traumatic Brain Injury";
+
+        List<Map<String, Object>> diagnoses = dao.getNeurosurgicalDiagnoses(patient);
+        if (!diagnoses.isEmpty()) {
+            String diagnosis = (String) diagnoses.get(0).get("diagnosis");
+            if (diagnosis != null && !diagnosis.trim().isEmpty()) {
+                return diagnosis;
+            }
+        }
+
+        List<Map<String, Object>> contexts = dao.getAdmissionContexts(patient);
+        if (contexts.isEmpty()) {
+            return "No diagnosis available";
+        }
+        String admissionDiagnosis = (String) contexts.get(0).get("primaryDiagnosis");
+        return (admissionDiagnosis == null || admissionDiagnosis.trim().isEmpty())
+                ? "No diagnosis available" : admissionDiagnosis;
     }
     
     @Override
     @Transactional(readOnly = true)
     public List<String> getActiveAlerts(Patient patient) {
-        if (patient == null) {
+        if (patient == null || dao == null) {
             return new ArrayList<>();
         }
-        
-        // Sample alerts
+
         List<String> alerts = new ArrayList<>();
-        alerts.add("Patient requires frequent neuro checks");
-        
+        Map<String, Object> latestGcs = getLatestGCS(patient);
+        Object totalScore = latestGcs.get("totalScore");
+        if (totalScore instanceof Integer) {
+            int score = (Integer) totalScore;
+            if (score <= 8) {
+                alerts.add("Glasgow \u2264 8 : risque vital, surveillance neurologique rapproch\u00e9e requise");
+            } else if (score <= 12) {
+                alerts.add("Glasgow entre 9 et 12 : traumatisme mod\u00e9r\u00e9, surveillance renforc\u00e9e");
+            }
+        }
         return alerts;
     }
     
@@ -228,5 +190,136 @@ public class PatientviewServiceImpl extends BaseOpenmrsService implements Patien
         pupilOptions.put("not_assessed", "Not Assessed");
         
         return pupilOptions;
+    }
+
+    @Override
+    @Transactional
+    public void saveSurgicalHistory(Patient patient, Map<String, Object> data) {
+        if (patient == null || data == null) {
+            throw new IllegalArgumentException("Patient and surgical history data cannot be null");
+        }
+        if (dao != null) {
+            dao.saveSurgicalHistory(patient, data);
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map<String, Object> getMedicalHistory(Patient patient) {
+        if (patient == null || dao == null) {
+            return new HashMap<>();
+        }
+        return dao.getMedicalHistory(patient);
+    }
+
+    @Override
+    @Transactional
+    public void saveMedicalHistory(Patient patient, Map<String, Object> data) {
+        if (patient == null || data == null) {
+            throw new IllegalArgumentException("Patient and medical history data cannot be null");
+        }
+        if (dao != null) {
+            dao.saveMedicalHistory(patient, data);
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getAdmissionContexts(Patient patient) {
+        if (patient == null || dao == null) {
+            return new ArrayList<>();
+        }
+        return dao.getAdmissionContexts(patient);
+    }
+
+    @Override
+    @Transactional
+    public void saveAdmissionContext(Patient patient, Map<String, Object> data) {
+        if (patient == null || data == null) {
+            throw new IllegalArgumentException("Patient and admission context data cannot be null");
+        }
+        if (dao != null) {
+            dao.saveAdmissionContext(patient, data);
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getVitalSigns(Patient patient, int limit) {
+        if (patient == null || dao == null) {
+            return new ArrayList<>();
+        }
+        return dao.getVitalSigns(patient, limit);
+    }
+
+    @Override
+    @Transactional
+    public void saveVitalSigns(Patient patient, Map<String, Object> data) {
+        if (patient == null || data == null) {
+            throw new IllegalArgumentException("Patient and vital signs data cannot be null");
+        }
+        if (dao != null) {
+            dao.saveVitalSigns(patient, data);
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getNeuroExamDetails(Patient patient, int limit) {
+        if (patient == null || dao == null) {
+            return new ArrayList<>();
+        }
+        return dao.getNeuroExamDetails(patient, limit);
+    }
+
+    @Override
+    @Transactional
+    public void saveNeuroExamDetail(Patient patient, Map<String, Object> data) {
+        if (patient == null || data == null) {
+            throw new IllegalArgumentException("Patient and neuro exam data cannot be null");
+        }
+        if (dao != null) {
+            dao.saveNeuroExamDetail(patient, data);
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getNeurosurgicalDiagnoses(Patient patient) {
+        if (patient == null || dao == null) {
+            return new ArrayList<>();
+        }
+        return dao.getNeurosurgicalDiagnoses(patient);
+    }
+
+    @Override
+    @Transactional
+    public void saveNeurosurgicalDiagnosis(Patient patient, Map<String, Object> data) {
+        if (patient == null || data == null) {
+            throw new IllegalArgumentException("Patient and diagnosis data cannot be null");
+        }
+        if (dao != null) {
+            dao.saveNeurosurgicalDiagnosis(patient, data);
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getPathologyReports(Patient patient) {
+        if (patient == null || dao == null) {
+            return new ArrayList<>();
+        }
+        return dao.getPathologyReports(patient);
+    }
+
+    @Override
+    @Transactional
+    public void savePathologyReport(Patient patient, Map<String, Object> data) {
+        if (patient == null || data == null) {
+            throw new IllegalArgumentException("Patient and pathology data cannot be null");
+        }
+        if (dao != null) {
+            dao.savePathologyReport(patient, data);
+        }
     }
 }

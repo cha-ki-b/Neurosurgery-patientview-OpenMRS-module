@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="org.openmrs.module.patientview.api.model">
+    <class name="NeurosurgicalDiagnosis" table="patientview_neurosurgical_diagnosis">
+        <id name="id" type="int" column="diagnosis_id">
+            <generator class="native"/>
+        </id>
+        <property name="uuid" type="string" column="uuid" length="38" unique="true"/>
+        <many-to-one name="patient" class="org.openmrs.Patient" column="patient_id" not-null="true"/>
+        <property name="diagnosis" type="string" column="diagnosis" length="500"/>
+        <property name="lesionLocation" type="string" column="lesion_location" length="255"/>
+        <property name="laterality" type="string" column="laterality" length="50"/>
+        <property name="size" type="string" column="lesion_size" length="100"/>
+        <property name="lesionCount" type="int" column="lesion_count"/>
+        <property name="whoDiagnosis" type="string" column="who_diagnosis" length="255"/>
+        <many-to-one name="creator" class="org.openmrs.User" column="creator" not-null="true"/>
+        <property name="dateCreated" type="timestamp" column="date_created" not-null="true"/>
+    </class>
+</hibernate-mapping>

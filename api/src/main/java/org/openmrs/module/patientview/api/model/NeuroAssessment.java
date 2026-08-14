@@ -15,6 +15,7 @@ public class NeuroAssessment {
     private Integer verbalResponse;
     private Integer motorResponse;
     private Integer gcsTotal;
+    private Integer karnofskyScore;
     private String notes;
     private User creator;
     private Date dateCreated;
@@ -42,6 +43,9 @@ public class NeuroAssessment {
 
     public Integer getGcsTotal() { return gcsTotal; }
     public void setGcsTotal(Integer gcsTotal) { this.gcsTotal = gcsTotal; }
+
+    public Integer getKarnofskyScore() { return karnofskyScore; }
+    public void setKarnofskyScore(Integer karnofskyScore) { this.karnofskyScore = karnofskyScore; }
 
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }

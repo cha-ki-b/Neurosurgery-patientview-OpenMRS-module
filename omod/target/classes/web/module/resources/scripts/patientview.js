@@ -220,9 +220,9 @@ function submitNeuroAssessment() {
             hideLoadingMessage();
             showSuccessMessage('Neurological assessment saved successfully');
             closeNeuroAssessmentModal();
-            
-            // Refresh the neurological status panel
-            refreshNeuroStatus();
+
+            // Reload so any history tables on this page (Resume, Examen clinique) pick up the new entry
+            window.location.reload();
         },
         error: function(xhr, status, error) {
             hideLoadingMessage();

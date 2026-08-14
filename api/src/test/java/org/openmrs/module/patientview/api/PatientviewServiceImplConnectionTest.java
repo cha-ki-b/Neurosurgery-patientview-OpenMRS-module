@@ -179,6 +179,122 @@ public class PatientviewServiceImplConnectionTest {
         assertEquals(15, saved.get(0).get("gcs"));
     }
 
+    @Test
+    public void shouldDelegatePhase1SavesToDao() {
+        Map<String, Object> data = new java.util.HashMap<>();
+
+        patientviewService.saveSurgicalHistory(testPatient, data);
+        verify(dao).saveSurgicalHistory(testPatient, data);
+
+        patientviewService.saveMedicalHistory(testPatient, data);
+        verify(dao).saveMedicalHistory(testPatient, data);
+
+        patientviewService.saveAdmissionContext(testPatient, data);
+        verify(dao).saveAdmissionContext(testPatient, data);
+
+        patientviewService.saveVitalSigns(testPatient, data);
+        verify(dao).saveVitalSigns(testPatient, data);
+
+        patientviewService.saveNeuroExamDetail(testPatient, data);
+        verify(dao).saveNeuroExamDetail(testPatient, data);
+
+        patientviewService.saveNeurosurgicalDiagnosis(testPatient, data);
+        verify(dao).saveNeurosurgicalDiagnosis(testPatient, data);
+
+        patientviewService.savePathologyReport(testPatient, data);
+        verify(dao).savePathologyReport(testPatient, data);
+    }
+
+    @Test
+    public void phase1SavesShouldRejectNullPatientOrData() {
+        Map<String, Object> data = new java.util.HashMap<>();
+        assertSaveRejectsNulls(() -> patientviewService.saveSurgicalHistory(null, data));
+        assertSaveRejectsNulls(() -> patientviewService.saveMedicalHistory(testPatient, null));
+        assertSaveRejectsNulls(() -> patientviewService.saveAdmissionContext(null, null));
+        assertSaveRejectsNulls(() -> patientviewService.saveVitalSigns(null, data));
+        assertSaveRejectsNulls(() -> patientviewService.saveNeuroExamDetail(testPatient, null));
+        assertSaveRejectsNulls(() -> patientviewService.saveNeurosurgicalDiagnosis(null, data));
+        assertSaveRejectsNulls(() -> patientviewService.savePathologyReport(testPatient, null));
+        verifyNoInteractions(dao);
+    }
+
+    private void assertSaveRejectsNulls(Runnable call) {
+        try {
+            call.run();
+            fail("Should throw IllegalArgumentException for null patient/data");
+        } catch (IllegalArgumentException e) {
+            assertTrue("Should mention null parameters", e.getMessage().contains("cannot be null"));
+        }
+    }
+
+    @Test
+    public void phase1GettersShouldReturnEmptyResultsForNullPatientWithoutTouchingDao() {
+        assertTrue(patientviewService.getMedicalHistory(null).isEmpty());
+        assertTrue(patientviewService.getAdmissionContexts(null).isEmpty());
+        assertTrue(patientviewService.getVitalSigns(null, 10).isEmpty());
+        assertTrue(patientviewService.getNeuroExamDetails(null, 10).isEmpty());
+        assertTrue(patientviewService.getNeurosurgicalDiagnoses(null).isEmpty());
+        assertTrue(patientviewService.getPathologyReports(null).isEmpty());
+        verifyNoInteractions(dao);
+    }
+
+    @Test
+    public void primaryDiagnosisShouldComeFromLatestAdmissionContext() {
+        List<Map<String, Object>> contexts = new ArrayList<>();
+        Map<String, Object> context = new java.util.HashMap<>();
+        context.put("primaryDiagnosis", "Hematome extradural");
+        contexts.add(context);
+        when(dao.getAdmissionContexts(testPatient)).thenReturn(contexts);
+
+        assertEquals("Hematome extradural", patientviewService.getPrimaryNeurologicalDiagnosis(testPatient));
+    }
+
+    @Test
+    public void primaryDiagnosisShouldFallBackWhenNoAdmissionContextRecorded() {
+        when(dao.getAdmissionContexts(testPatient)).thenReturn(new ArrayList<>());
+        assertEquals("No diagnosis available", patientviewService.getPrimaryNeurologicalDiagnosis(testPatient));
+    }
+
+    @Test
+    public void primaryDiagnosisShouldPreferFormalDiagnosisOverAdmissionContextImpression() {
+        List<Map<String, Object>> formalDiagnoses = new ArrayList<>();
+        Map<String, Object> formal = new java.util.HashMap<>();
+        formal.put("diagnosis", "Glioblastome temporal droit");
+        formalDiagnoses.add(formal);
+        when(dao.getNeurosurgicalDiagnoses(testPatient)).thenReturn(formalDiagnoses);
+
+        // Deliberately not stubbing dao.getAdmissionContexts(): when a formal diagnosis exists,
+        // getPrimaryNeurologicalDiagnosis returns it immediately without ever consulting the
+        // admission-context fallback, so stubbing that call here would be dead test code (and
+        // Mockito's strict stubbing correctly rejects unused stubs).
+        assertEquals("Glioblastome temporal droit", patientviewService.getPrimaryNeurologicalDiagnosis(testPatient));
+        verify(dao, never()).getAdmissionContexts(testPatient);
+    }
+
+    @Test
+    public void activeAlertsShouldFlagLowGlasgowScore() {
+        List<Map<String, Object>> mockAssessments = new ArrayList<>();
+        Map<String, Object> assessment = new java.util.HashMap<>();
+        assessment.put("gcs", 7);
+        mockAssessments.add(assessment);
+        when(dao.getNeuroAssessments(testPatient, 1)).thenReturn(mockAssessments);
+
+        List<String> alerts = patientviewService.getActiveAlerts(testPatient);
+        assertEquals(1, alerts.size());
+        assertTrue(alerts.get(0).contains("8"));
+    }
+
+    @Test
+    public void activeAlertsShouldBeEmptyWhenGlasgowIsNormal() {
+        List<Map<String, Object>> mockAssessments = new ArrayList<>();
+        Map<String, Object> assessment = new java.util.HashMap<>();
+        assessment.put("gcs", 15);
+        mockAssessments.add(assessment);
+        when(dao.getNeuroAssessments(testPatient, 1)).thenReturn(mockAssessments);
+
+        assertTrue(patientviewService.getActiveAlerts(testPatient).isEmpty());
+    }
+
     // Helper method to access private fields for testing
     private Object getPrivateField(Object obj, String fieldName) {
         try {

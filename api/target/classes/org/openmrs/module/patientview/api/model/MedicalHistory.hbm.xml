@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="org.openmrs.module.patientview.api.model">
+    <class name="MedicalHistory" table="patientview_medical_history">
+        <id name="id" type="int" column="medical_history_id">
+            <generator class="native"/>
+        </id>
+        <property name="uuid" type="string" column="uuid" length="38" unique="true"/>
+        <many-to-one name="patient" class="org.openmrs.Patient" column="patient_id" not-null="true" unique="true"/>
+        <property name="diabetes" type="boolean" column="diabetes"/>
+        <property name="hypertension" type="boolean" column="hypertension"/>
+        <property name="epilepsy" type="boolean" column="epilepsy"/>
+        <property name="stroke" type="boolean" column="stroke"/>
+        <property name="heartDisease" type="boolean" column="heart_disease"/>
+        <property name="renalFailure" type="boolean" column="renal_failure"/>
+        <property name="allergies" type="string" column="allergies" length="500"/>
+        <property name="chronicTreatment" type="string" column="chronic_treatment" length="500"/>
+        <property name="otherHistory" type="string" column="other_history" length="500"/>
+        <many-to-one name="creator" class="org.openmrs.User" column="creator" not-null="true"/>
+        <property name="dateCreated" type="timestamp" column="date_created" not-null="true"/>
+        <many-to-one name="changedBy" class="org.openmrs.User" column="changed_by"/>
+        <property name="dateChanged" type="timestamp" column="date_changed"/>
+    </class>
+</hibernate-mapping>

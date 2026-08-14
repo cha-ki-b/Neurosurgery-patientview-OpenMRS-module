@@ -1,0 +1,57 @@
+# openmrs-docker-compose.yml
+#
+# SECURITY UPDATE: all credentials now come from a .env file (see .env.example in this
+# folder) instead of being hardcoded here. Never commit a real .env file - it is already
+# listed in .gitignore.
+
+services:
+  openmrs-mysql:
+    image: mysql:8.0 # Use a recent, ARM64 compatible MySQL image for better performance and features
+    container_name: openmrs-mysql
+    restart: always
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --max_allowed_packet=16M
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DB:-openmrs}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in your .env file}
+      MYSQL_USER: ${MYSQL_USER:-openmrs}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in your .env file}
+    volumes:
+      - openmrs_mysql_data:/var/lib/mysql # Persistent volume for MySQL data
+    networks:
+      - openmrs_neuro_network
+    healthcheck: # Ensures MySQL is fully ready before OpenMRS attempts to connect
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u$$MYSQL_USER -p$$MYSQL_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  openmrs:
+    image: openmrs/openmrs-reference-application-distro:latest # Use latest stable ARM64 image
+    container_name: openmrs-app
+    restart: always
+    # SECURITY: 8080 is only published to localhost, not 0.0.0.0, so the container is not
+    # directly reachable from outside the host. Public access goes through the nginx reverse
+    # proxy (nginx-docker-compose.yml), which terminates HTTPS on 443. Comment this line out
+    # entirely once you've confirmed the proxy path works, so only 443/80 are exposed at all.
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      DB_DATABASE: ${MYSQL_DB:-openmrs}
+      DB_HOST: openmrs-mysql # Use the service name for inter-container communication
+      DB_USERNAME: ${MYSQL_USER:-openmrs}
+      DB_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in your .env file}
+      DB_CREATE_TABLES: 'true' # Set to true for initial setup to create database schema
+      DB_AUTO_UPDATE: 'true'   # Set to true for initial setup to apply database migrations
+      MODULE_WEB_ADMIN: 'true' # Ensures the module administration UI is available
+    networks:
+      - openmrs_neuro_network
+    depends_on:
+      openmrs-mysql:
+        condition: service_healthy # Ensures OpenMRS starts only after MySQL is healthy
+
+networks:
+  openmrs_neuro_network:
+    external: true # created once via: docker network create openmrs_neuro_network
+
+volumes:
+  openmrs_mysql_data: # Define the named volume for MySQL data persistence
