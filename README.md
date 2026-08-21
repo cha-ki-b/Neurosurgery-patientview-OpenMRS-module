@@ -289,16 +289,18 @@ credentials moved from hardcoded YAML into a `.env` file. These files update the
 - DICOM traffic itself is unencrypted; only the HTTP(S) layer is covered by
   `deployment/`. Orthanc's `DicomTlsEnabled` is a separate, more involved configuration
   step for later.
-- `MedicalHistory.hbm.xml` still carries `unique="true"` on its `patient` `many-to-one`,
-  left over from the v1.0.1 single-row-per-patient design that changeset
-  `patientview-2026-08-12-01` undid. It is inert (Hibernate only uses it for DDL generation,
-  and OpenMRS migrates with Liquibase), but it would resurrect the constraint for anyone who
-  ever pointed `hbm2ddl` at this schema.
-- `diagnostic.gsp`'s laterality `<option value="Bilat\u00e9rale">` stores the literal
-  text `Bilat\u00e9rale`: a `.gsp` emits an attribute value verbatim, so a Groovy-style
-  unicode escape is not decoded there. Existing rows already hold that string, so changing
-  it is a data decision, not just a template fix - the newer tabs use HTML entities in
-  `value="..."` instead, which browsers do decode.
+- **Data residue from the laterality bug fixed in 1.3.0.** Any
+  `patientview_neurosurgical_diagnosis` row saved before 1.3.0 with laterality *Bilatérale*
+  holds the literal text `Bilat\u00e9rale`. `diagnostic.gsp` had a Groovy-style unicode
+  escape inside an HTML attribute value, and a `.gsp` emits an attribute value verbatim rather
+  than decoding it, so that text is what the browser submitted and what got stored. The
+  template is fixed (it uses `&eacute;` now, which the browser *does* decode before
+  submitting, as every tab added in 1.3.0 already did), but historical rows still render the
+  raw escape on the Diagnostic tab and in `medreport` output. Repairing them means an
+  in-place `UPDATE` on a clinical table, which this module has never done (§3) - so it is
+  deliberately left as an explicit decision rather than quietly migrated. To see whether any
+  exist: `SELECT diagnosis_id, laterality FROM patientview_neurosurgical_diagnosis WHERE
+  laterality LIKE '%\\u00%';`
 
 ## 12. Version history
 
@@ -309,7 +311,11 @@ credentials moved from hardcoded YAML into a `.env` file. These files update the
   `imaging` module reflectively rather than reimplementing an Orthanc client (§14). Fixes the
   `null null` patient-name header for good by moving name assembly out of the templates into
   `PatientviewDisplayName`, with build-time guards against the pattern that regressed twice
-  (§7).
+  (§7). Also clears two older latent defects: `MedicalHistory.hbm.xml`'s stale
+  `unique="true"` on `patient`, left from the v1.0.1 single-row design that changeset
+  `patientview-2026-08-12-01` undid and a live hazard for any `hbm2ddl` run against this
+  schema; and `diagnostic.gsp`'s laterality option, which stored a literal `\u00e9` escape
+  instead of the accented text (§11 covers the rows already saved that way).
 - **1.0.1** — Phase 1: sidebar navigation, Antécédents, Examen clinique.
 - **1.0.2 / 1.2.0** — Phase 2: Diagnostic neurochirurgical, Anatomopathologie; security/NFR
   foundation (privileges, append-only non-repudiation, DB indexes, `deployment/`); CSS
