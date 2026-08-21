@@ -289,7 +289,6 @@
             referencedTableName="users" referencedColumnNames="user_id"/>
     </changeSet>
 
-<<<<<<< HEAD
     <!-- ============================================================
          Phase 2: security/reliability hardening + Diagnostic & Anatomopathologie
          ============================================================ -->
@@ -548,6 +547,4 @@
         </createIndex>
     </changeSet>
 
-=======
->>>>>>> 72357f4195852fcce719c2ae19b1a4a78c735bde
 </databaseChangeLog>

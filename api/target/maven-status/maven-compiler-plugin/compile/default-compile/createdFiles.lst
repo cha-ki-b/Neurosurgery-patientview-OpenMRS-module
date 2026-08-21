@@ -11,15 +11,5 @@ org\openmrs\module\patientview\api\impl\PatientviewServiceImpl.class
 org\openmrs\module\patientview\api\model\SurgicalHistory.class
 org\openmrs\module\patientview\PatientViewActivator.class
 org\openmrs\module\patientview\api\dao\PatientviewDAOImpl.class
-org\openmrs\module\patientview\api\model\VitalSigns.class
 org\openmrs\module\patientview\api\PatientviewService.class
 org\openmrs\module\patientview\api\dao\PatientviewDao.class
-<<<<<<< HEAD
-=======
-org\openmrs\module\patientview\api\model\NeuroExamDetail.class
-org\openmrs\module\patientview\api\model\AdmissionContext.class
-org\openmrs\module\patientview\api\model\NeuroAssessment.class
-org\openmrs\module\patientview\Item.class
-org\openmrs\module\patientview\api\model\MedicalHistory.class
-org\openmrs\module\patientview\api\impl\PatientviewServiceImpl.class
->>>>>>> 72357f4195852fcce719c2ae19b1a4a78c735bde

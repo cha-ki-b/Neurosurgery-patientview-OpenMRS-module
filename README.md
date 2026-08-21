@@ -7,7 +7,7 @@ more to come), full CRUD backed by MySQL, and a two-tier privilege model so nurs
 surgeons/radiologists see different levels of access.
 
 **Target platform:** OpenMRS Platform 2.5.9 / Reference Application 2.12.2
-**Module ID:** `patientview` · **Package:** `org.openmrs.module.patientview` · **Version:** `1.2.1`
+**Module ID:** `patientview` · **Package:** `org.openmrs.module.patientview` · **Version:** `1.2.2`
 
 Thanks to `hanyG175` and `bouzenaali` for starting the job: [Repo](https://github.com/hanyG175/openmrs-patientview-module)
 
@@ -31,7 +31,7 @@ patientview/
 `api` has no dependency on `omod`; `omod` depends on `api`. This keeps persistence/business
 logic testable and reusable independently of the web layer.
 
-Build produces `patientview1.2.1.omod` (see `omod/pom.xml`'s `finalName`:
+Build produces `patientview1.2.2.omod` (see `omod/pom.xml`'s `finalName`:
 `${project.parent.artifactId}${project.parent.version}`, deliberately no separator).
 
 ## 2. Feature map (Fiche de Neurochirurgie → module tabs)
@@ -250,7 +250,67 @@ credentials moved from hardcoded YAML into a `.env` file. These files update the
 - **1.0.2 / 1.2.0** — Phase 2: Diagnostic neurochirurgical, Anatomopathologie; security/NFR
   foundation (privileges, append-only non-repudiation, DB indexes, `deployment/`); CSS
   namespace fix; null-render guard fix.
+- **1.2.2** — Contributes this module's clinical data to the `medreport` reporting module via
+  a single new resource, `api/src/main/resources/medreport-datasource.json`. **No Java, no
+  new dependency, no schema change** — see §13.
 - **1.2.1** — Two-tier `App:` privilege model (view/manage) with explicit enforcement at
   every controller, since the Reference Application's auto-grant convention made the
   original API-level privileges an ineffective boundary; second, more defensive round of
   the null-render guard fix (literal string `"null"`, not just true null).
+
+---
+
+## 13. Contributing data to `medreport` (1.2.2)
+
+`medreport` renders patient reports from whatever data other modules declare. This module
+declares its own through **one file**:
+
+```
+api/src/main/resources/medreport-datasource.json
+```
+
+It lists the eight clinical sets (admission, medical history, surgical history, vitals,
+neurological exam, scores, diagnosis, pathology), their fields with **fr/en/ar labels**, the
+privilege each requires, and which `PatientviewService` method returns each set.
+
+### What this module did *not* have to do
+
+- No dependency on `medreport` in any `pom.xml`.
+- No Java code, no interface to implement, no Spring bean.
+- No schema change.
+
+`medreport` discovers the manifest on the classpath of every started module and calls the
+named service methods reflectively. The contract is the manifest schema plus the fact that
+those methods already return `Map<String,Object>` / `List<Map<String,Object>>` — JDK types on
+both sides. **If `medreport` is not installed, nothing reads the file and nothing changes.**
+
+Because the calls go through `Context.getService(PatientviewService.class)`, this module's own
+`@Authorized` advice still runs on every fetch: `medreport` cannot be used to bypass
+patientview's access rules. The manifest's `requiredPrivilege` is an additional filter that
+also hides a set from the report's selection tree, so a user who may not view data cannot even
+ask for it.
+
+### The guard against drift
+
+The integration is loose by design, which means nothing at compile time notices when the
+manifest and this module's code diverge — a renamed DAO map key would leave a field selectable
+in the report window but permanently blank in the document.
+
+`MedreportDatasourceManifestTest` closes that gap from this side, with no OpenMRS context:
+
+- every declared `serviceClass`/`method` exists on `PatientviewService` with the expected
+  signature, and returns a `Map` for a flat set or a `List` for a repeating one;
+- every declared field id (and every `recordTitleKey`) is a key `PatientviewDAOImpl` actually
+  puts into its map;
+- the advertised privilege is one this module really defines;
+- no `pom.xml` or source file references `medreport`.
+
+It is the only place this module mentions `medreport`, and it does so without importing
+anything from it.
+
+### Upgrading
+
+Rebuild and upload `patientview1.2.2.omod`. **Uninstall 1.2.1 first** — the filename changed,
+so OpenMRS would otherwise keep both. If `medreport` was already running, open
+`/openmrs/medreport/settings.page?refresh=true` afterwards so it rescans data sources; module
+start order is not fixed and it may have scanned before this module started.

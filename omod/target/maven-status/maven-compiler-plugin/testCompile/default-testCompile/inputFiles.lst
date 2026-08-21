@@ -1,9 +1,3 @@
-<<<<<<< HEAD
-C:\Users\belam\Downloads\neuro-patientview-1.2.0\neuro-patientview\omod\src\test\java\org\openmrs\module\patientview\ModuleWiringTest.java
-C:\Users\belam\Downloads\neuro-patientview-1.2.0\neuro-patientview\omod\src\test\java\org\openmrs\module\patientview\AdminListExtensionTest.java
-C:\Users\belam\Downloads\neuro-patientview-1.2.0\neuro-patientview\omod\src\test\java\org\openmrs\module\patientview\ModuleSmokeTest.java
-=======
-C:\Users\belam\Downloads\neuro-patientview-1.1.0-fixed\neuro-patientview\omod\src\test\java\org\openmrs\module\patientview\ModuleSmokeTest.java
-C:\Users\belam\Downloads\neuro-patientview-1.1.0-fixed\neuro-patientview\omod\src\test\java\org\openmrs\module\patientview\AdminListExtensionTest.java
-C:\Users\belam\Downloads\neuro-patientview-1.1.0-fixed\neuro-patientview\omod\src\test\java\org\openmrs\module\patientview\ModuleWiringTest.java
->>>>>>> 72357f4195852fcce719c2ae19b1a4a78c735bde
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\Medreport and custom imaging\neuro-patientview\omod\src\test\java\org\openmrs\module\patientview\ModuleWiringTest.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\Medreport and custom imaging\neuro-patientview\omod\src\test\java\org\openmrs\module\patientview\ModuleSmokeTest.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\Medreport and custom imaging\neuro-patientview\omod\src\test\java\org\openmrs\module\patientview\AdminListExtensionTest.java
