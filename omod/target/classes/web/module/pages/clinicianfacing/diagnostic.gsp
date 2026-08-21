@@ -55,7 +55,7 @@ ${ ui.includeJavascript("patientview", "patientview-crud.js") }
                                 <option value="">--</option>
                                 <option value="Droite">Droite</option>
                                 <option value="Gauche">Gauche</option>
-                                <option value="Bilat\u00e9rale">Bilat&eacute;rale</option>
+                                <option value="Bilat&eacute;rale">Bilat&eacute;rale</option>
                                 <option value="Non applicable">Non applicable</option>
                             </select>
                         </label>
