@@ -1,13 +1,14 @@
 # Patientview (Neurosurgery Patient View) — OpenMRS Module
 
 A custom OpenMRS module that replaces the default coreapps patient dashboard with a
-neurosurgery-focused one: a multi-tab record covering the department's paper "Fiche de
-Neurochirurgie" (antecedents, clinical/neurological exam, diagnosis, anatomopathology, and
-more to come), full CRUD backed by MySQL, and a two-tier privilege model so nurses and
-surgeons/radiologists see different levels of access.
+neurosurgery-focused one: a multi-tab record covering the whole of the department's paper
+"Fiche de Neurochirurgie" - admission, antecedents, clinical and neurological exam,
+biology, imaging, diagnosis, management, anatomopathology, post-operative course,
+sequelae, discharge and follow-up - with full CRUD backed by MySQL and a two-tier
+privilege model so nurses and surgeons/radiologists see different levels of access.
 
 **Target platform:** OpenMRS Platform 2.5.9 / Reference Application 2.12.2
-**Module ID:** `patientview` · **Package:** `org.openmrs.module.patientview` · **Version:** `1.2.2`
+**Module ID:** `patientview` · **Package:** `org.openmrs.module.patientview` · **Version:** `1.3.0`
 
 Thanks to `hanyG175` and `bouzenaali` for starting the job: [Repo](https://github.com/hanyG175/openmrs-patientview-module)
 
@@ -31,7 +32,7 @@ patientview/
 `api` has no dependency on `omod`; `omod` depends on `api`. This keeps persistence/business
 logic testable and reusable independently of the web layer.
 
-Build produces `patientview1.2.2.omod` (see `omod/pom.xml`'s `finalName`:
+Build produces `patientview1.3.0.omod` (see `omod/pom.xml`'s `finalName`:
 `${project.parent.artifactId}${project.parent.version}`, deliberately no separator).
 
 ## 2. Feature map (Fiche de Neurochirurgie → module tabs)
@@ -43,19 +44,19 @@ Build produces `patientview1.2.2.omod` (see `omod/pom.xml`'s `finalName`:
 | Examen clinique | §4 Examen clinique général, §5 Examen neurologique (incl. GCS) | done |
 | Diagnostic neurochirurgical | §8 | done |
 | Anatomopathologie | §10 | done |
-| Prise en charge | §9 | not started |
-| Évolution & séquelles | §11-12 | not started |
-| Biologie | §7 | not started |
-| Sortie & suivi | §13-14 | not started |
-| Imagerie | Orthanc-backed, §6 | not started |
+| Prise en charge | §9 (traitement médical + chirurgical) | done |
+| Évolution & séquelles | §11-12 | done |
+| Biologie | §7 | done |
+| Sortie & suivi | §13-14 | done |
+| Imagerie | §6 - local comptes rendus + DICOM studies read from the `imaging` module | done |
 
 Admin info already covered by OpenMRS core (name, DOB, sex, phone, etc.) is intentionally
 **not** duplicated anywhere in this module.
 
 ## 3. Domain model & persistence
 
-Eight persistent entities, mapped with classic Hibernate `.hbm.xml` (not JPA annotations),
-all FK'd to `patient` and `users`:
+Sixteen persistent entities, mapped with classic Hibernate `.hbm.xml` (not JPA
+annotations), all FK'd to `patient` and `users`:
 
 | Entity | Table | Pattern |
 | --- | --- | --- |
@@ -67,6 +68,14 @@ all FK'd to `patient` and `users`:
 | `NeuroExamDetail` | `patientview_neuro_exam_detail` | append-only |
 | `NeurosurgicalDiagnosis` | `patientview_neurosurgical_diagnosis` | append-only |
 | `Pathology` | `patientview_pathology` | append-only |
+| `MedicalTreatment` | `patientview_medical_treatment` | append-only |
+| `SurgicalTreatment` | `patientview_surgical_treatment` | append-only |
+| `PostopEvolution` | `patientview_postop_evolution` | append-only |
+| `Sequelae` | `patientview_sequelae` | append-only |
+| `LabResult` | `patientview_lab_result` | append-only |
+| `Discharge` | `patientview_discharge` | append-only |
+| `FollowUp` | `patientview_follow_up` | append-only |
+| `ImagingNote` | `patientview_imaging_note` | append-only |
 
 **Append-only, everywhere, on purpose.** No entity is ever updated or deleted in place — a
 correction is a new row, not an overwrite. This is a deliberate non-repudiation choice: the
@@ -83,9 +92,21 @@ matter how you fix it — Liquibase permanently marks a changeset ID as done the
 checksum for it is recorded. The actual fix lives in a fresh, `runOnChange="true"`,
 fully idempotent changeset instead.
 
+`SurgicalTreatment` is deliberately **not** a reuse of `SurgicalHistory`: that one is §3,
+the patient's *antécédents chirurgicaux* (operations predating this episode, often
+elsewhere), while `SurgicalTreatment` is §9's intervention performed as part of the
+current management, carrying operative detail (exérèse type, duration, per-operative
+complications, drain/catheter) a history entry has no place for. `Sequelae` is likewise
+separate from `PostopEvolution` despite sharing a tab - sequelae are assessed at follow-up,
+months after the post-operative course is recorded, and with append-only rows a merged
+table would force a clinician to re-enter the whole post-operative section to add a
+deficit noticed later.
+
 Mapping files are registered via `config.xml`'s `<mappingFiles>` (not a Spring
 `parent="mappingResources"` bean - that bean doesn't exist in OpenMRS core and breaks module
-startup). Every entry is checked against the classpath by `ModuleWiringTest`.
+startup). `ModuleWiringTest` enumerates the `.hbm.xml` files on disk and fails if any of
+them is missing from that list, so a new entity cannot be left unmapped (which compiles,
+packages and deploys fine, then fails at the first HQL query with "not mapped").
 
 ## 4. Security & authorization model
 
@@ -144,9 +165,11 @@ OpenMRS — missing any one produces a different failure mode:
 
 ## 7. Web layer (`omod`)
 
-**Pages** (`pages/clinicianfacing/*.gsp` + matching `*PageController.java`): `patient.gsp`
-(Résumé), `antecedents.gsp`, `examenClinique.gsp`, `diagnostic.gsp`, `anatomopathologie.gsp`.
-Two shared fragments (`sidebarNav.gsp`, `patientHeader.gsp`) are included on every page.
+**Pages** (`pages/clinicianfacing/*.gsp` + matching `*PageController.java`), one per sidebar
+tab: `patient.gsp` (Résumé), `antecedents.gsp`, `examenClinique.gsp`, `diagnostic.gsp`,
+`priseEnCharge.gsp`, `anatomopathologie.gsp`, `evolution.gsp`, `biologie.gsp`, `sortie.gsp`,
+`imagerie.gsp`. Two shared fragments (`sidebarNav.gsp`, `patientHeader.gsp`) are included on
+every page.
 
 Things worth knowing if you touch these templates:
 - Page templates have **no `config` variable** — that's a fragment-only concept (`config`
@@ -161,9 +184,20 @@ Things worth knowing if you touch these templates:
 - **Never interpolate a possibly-null/empty value directly**: Groovy's GString renders a
   true `null` as the literal text `"null"`, and a plain truthy check (`x ? ... : ...`)
   doesn't catch a stored value that's the literal *string* `"null"` (four characters) rather
-  than a true null - both have bitten this module in production. The name-display pattern
-  used everywhere now guards against both:
-  `(patient.familyName && patient.familyName.toString().trim().toLowerCase() != 'null') ? ui.format(patient.familyName) : ''`.
+  than a true null. Both have bitten this module in production, repeatedly - see the next
+  bullet.
+- **Patient names are never formatted in a template.** The dashboard header showed
+  `null null` (or, after the v1.2.2 guard, a bare `, `) for patients whose `person_name`
+  row holds the literal four-character string `"null"`. It was "fixed" twice in the
+  templates and came back both times, because every page and every breadcrumb formatted
+  the name inline: each fix had to be copy-pasted into five places and one was always
+  missed. As of 1.3.0 the name is assembled once in
+  `PatientviewDisplayName.of(Patient)` (in `api`, unit-tested by
+  `PatientviewDisplayNameTest`), every page controller puts the result in the model as
+  `patientDisplayName`, and the templates only render that. `ModuleWiringTest` fails the
+  build if any `.gsp` reads `patient.familyName`/`patient.givenName` again, or if a page
+  controller forgets to supply the attribute. **If you see a name problem, fix
+  `PatientviewDisplayName`, not a template.**
 - Two page-controller-model attributes drive access control on every page: `accessDenied`
   (skip rendering content, show a message instead) and `canManage` (hide every "+ Ajouter"
   button and `<form>`, falling back to a read-only summary where relevant - see
@@ -201,7 +235,11 @@ by every add-form), `resources/css/patientview.css`.
 - `require_version 2.4.3` — minimum OpenMRS Platform version (floor check; running on a
   higher version, e.g. 2.5.9, is fine).
 - `require_modules` — minimum versions of `uiframework`, `webservices.rest`, `coreapps`,
-  `appui`, matched against what Reference Application 2.12.2 bundles.
+  `appui`, matched against what Reference Application 2.12.2 bundles. A missing one of these
+  stops the module from starting.
+- `aware_of_modules` — `imaging`, an **optional** companion: start it first if it is
+  present, make its classes visible, but load patientview fine without it. This is what
+  keeps the Imagerie tab's PACS list from becoming a hard dependency — see §14.
 - `mappingFiles` — see §3.
 - `privilege` × 4 — see §4.
 
@@ -216,7 +254,12 @@ Test layers:
 - **`PatientviewServiceSpringTest` / `PatientviewServiceImplConnectionTest`** — plain
   Mockito unit tests (no OpenMRS context; uses `MockitoJUnitRunner`'s strict-stubs mode, so
   every `when(...)` must actually be exercised by the test or the build fails), verifying
-  service/DAO delegation logic and the diagnosis-precedence/alert-threshold rules.
+  service/DAO delegation logic and the diagnosis-precedence/alert-threshold rules. Also
+  covers `DicomStudyBridge`'s degradation path: the `imaging` module is not on the test
+  classpath, which is exactly the "not installed" case the Imagerie tab has to survive.
+- **`PatientviewDisplayNameTest`** — the patient-name rendering rules (§7), including the
+  literal-`"null"` inputs that caused the original bug and the one-half-of-the-name case
+  that the template-only fix rendered as a stray comma.
 - **`QuickDeploymentTest`** — extends `BaseModuleContextSensitiveTest`, boots a real
   in-memory OpenMRS Spring/Hibernate context. The only test that exercises the full startup
   wiring (§6), so it's the one that would catch Spring/Liquibase misconfiguration before it
@@ -236,16 +279,37 @@ credentials moved from hardcoded YAML into a `.env` file. These files update the
 
 ## 11. Known limitations / roadmap
 
-- Prise en charge (§9), Évolution & séquelles (§11-12), Biologie (§7), Sortie & suivi
-  (§13-14), and the Orthanc-backed Imagerie tab are not yet built (§2).
+- All ten tabs are built (§2); the Fiche de Neurochirurgie is fully covered.
+- The Imagerie tab's DICOM study list needs the separate `imaging` module installed and
+  started. Without it the tab still works, showing this module's own comptes rendus and a
+  message explaining the PACS link is unavailable - but there is no fallback path that
+  talks to Orthanc directly, by design (§14).
 - No CSRF token on the `.form` POST endpoints — matches the rest of the legacy OpenMRS UI
   framework's module conventions (a pre-existing ecosystem-wide gap, not introduced here).
-- DICOM traffic itself is unencrypted even once the planned Imagerie tab exists; only the
-  HTTP(S) layer is covered by `deployment/`. Orthanc's `DicomTlsEnabled` is a separate,
-  more involved configuration step for later.
+- DICOM traffic itself is unencrypted; only the HTTP(S) layer is covered by
+  `deployment/`. Orthanc's `DicomTlsEnabled` is a separate, more involved configuration
+  step for later.
+- `MedicalHistory.hbm.xml` still carries `unique="true"` on its `patient` `many-to-one`,
+  left over from the v1.0.1 single-row-per-patient design that changeset
+  `patientview-2026-08-12-01` undid. It is inert (Hibernate only uses it for DDL generation,
+  and OpenMRS migrates with Liquibase), but it would resurrect the constraint for anyone who
+  ever pointed `hbm2ddl` at this schema.
+- `diagnostic.gsp`'s laterality `<option value="Bilat\u00e9rale">` stores the literal
+  text `Bilat\u00e9rale`: a `.gsp` emits an attribute value verbatim, so a Groovy-style
+  unicode escape is not decoded there. Existing rows already hold that string, so changing
+  it is a data decision, not just a template fix - the newer tabs use HTML entities in
+  `value="..."` instead, which browsers do decode.
 
 ## 12. Version history
 
+- **1.3.0** — Phase 3, completing the Fiche: Prise en charge (§9), Évolution
+  postopératoire & Séquelles (§11-12), Biologie (§7), Sortie & Suivi (§13-14) and
+  Imagerie (§6) - eight new append-only entities, their REST/page controllers and tabs, and
+  eight new `medreport` sections. The Imagerie tab reads DICOM studies from the separate
+  `imaging` module reflectively rather than reimplementing an Orthanc client (§14). Fixes the
+  `null null` patient-name header for good by moving name assembly out of the templates into
+  `PatientviewDisplayName`, with build-time guards against the pattern that regressed twice
+  (§7).
 - **1.0.1** — Phase 1: sidebar navigation, Antécédents, Examen clinique.
 - **1.0.2 / 1.2.0** — Phase 2: Diagnostic neurochirurgical, Anatomopathologie; security/NFR
   foundation (privileges, append-only non-repudiation, DB indexes, `deployment/`); CSS
@@ -269,9 +333,15 @@ declares its own through **one file**:
 api/src/main/resources/medreport-datasource.json
 ```
 
-It lists the eight clinical sets (admission, medical history, surgical history, vitals,
-neurological exam, scores, diagnosis, pathology), their fields with **fr/en/ar labels**, the
-privilege each requires, and which `PatientviewService` method returns each set.
+It lists the sixteen clinical sets (admission, medical history, surgical history, vitals,
+neurological exam, scores, diagnosis, pathology, imaging notes, biology, medical and
+surgical treatment, post-operative course, sequelae, discharge, follow-up), their fields
+with **fr/en/ar labels**, the privilege each requires, and which `PatientviewService`
+method returns each set.
+
+The DICOM study list is deliberately **not** in the manifest: those rows come from the
+`imaging` module rather than from a patientview table, and `medreport` already links to
+its own imaging reports page.
 
 ### What this module did *not* have to do
 
@@ -310,7 +380,66 @@ anything from it.
 
 ### Upgrading
 
-Rebuild and upload `patientview1.2.2.omod`. **Uninstall 1.2.1 first** — the filename changed,
-so OpenMRS would otherwise keep both. If `medreport` was already running, open
+Rebuild and upload `patientview1.3.0.omod`. **Uninstall the previous version first** — the
+filename carries the version, so OpenMRS would otherwise keep both. If `medreport` was already running, open
 `/openmrs/medreport/settings.page?refresh=true` afterwards so it rescans data sources; module
 start order is not fixed and it may have scanned before this module started.
+
+---
+
+## 14. Reading DICOM studies from the `imaging` module (1.3.0)
+
+The Imagerie tab (Fiche §6) has two halves, and only one of them is this module's data.
+
+**What patientview owns.** `ImagingNote` / `patientview_imaging_note`: the *compte rendu* -
+type d'examen (TDM / IRM / Angio-TDM / Angio-IRM), date, and the clinician's reading. This is
+a clinical note *about* a study, and it exists whether or not the images ever reached a PACS.
+Ordinary append-only entity, same pattern as every other tab.
+
+**What patientview does not own.** The studies themselves. The roadmap originally called for an
+HTTP client in this module hitting Orthanc's `/patients` and `/studies`, with the base URL and
+credentials as OpenMRS global properties. That was dropped once it became clear the separate
+[`imaging`](https://github.com/UCLouvain-ICTEAM) module already does all of it: it stores the
+Orthanc base URL, credentials and proxy URL in its own `OrthancConfiguration` entity, syncs
+studies, resolves DICOM PatientIDs to OpenMRS patients, and serves its own series / instances /
+viewer pages. Reimplementing that here would have meant a second place to configure Orthanc, a
+second copy of the patient-matching rule, and a second set of credentials to rotate - three
+things guaranteed to drift apart.
+
+So the tab reads from `imaging` instead, through
+`api/.../api/imaging/DicomStudyBridge.java`:
+
+- `Context.loadClass("org.openmrs.module.imaging.api.DicomStudyService")` (the global
+  `OpenmrsClassLoader`, which searches every started module - a plain `Class.forName` from this
+  module's own loader would not find it), then `getStudiesOfPatient(patient)` reflectively.
+- Each study is flattened to a `Map` (`studyId`, `studyDate`, `studyTime`, `studyDescription`,
+  `studyInstanceUID`). `studyDate` is DICOM's raw `YYYYMMDD` reformatted for reading; each row
+  links to `imaging/series.page?patientId=..&studyId=..`, and the panel header links to
+  `imaging/studies.page`. Nothing is cached or copied locally - Orthanc stays the source of
+  truth for images, `imaging` stays the source of truth for how to reach it.
+- Exposed as `PatientviewService.getImagingStudies(Patient)` /
+  `isImagingModuleAvailable()` rather than called from the controller directly, so controllers
+  keep a single entry point and **this module's own view privilege is still enforced before
+  another module's data is rendered inside a patientview page**.
+
+### Why reflection, and what it costs
+
+Same trade as the `medreport` integration in §13, in the opposite direction: no `pom.xml`
+dependency, no shared type, no compile-time coupling. `imaging` is declared only under
+`config.xml`'s `<aware_of_modules>`, which is OpenMRS's way of saying *start it before me if
+it's there, and let me see its classes - but load me fine if it isn't*.
+
+The cost is that nothing at compile time notices if `imaging` renames
+`getStudiesOfPatient`. Every failure mode - module absent, module stopped, signature moved,
+classloader can't see it - is caught and degrades to an empty list, because all of them mean
+the same thing to a clinician looking at this tab: there are no studies to show. None is worth
+turning a patient record into a stack trace.
+`PatientviewServiceImplConnectionTest.imagingStudiesShouldDegradeToAnEmptyListWhenTheImagingModuleIsAbsent()`
+pins that behaviour: `imaging` is genuinely not on the test classpath, so the test exercises
+the real not-installed path rather than a mock of it.
+
+**If the tab shows "le module d'imagerie n'est pas installé"** on a server that does run
+`imaging`, check in this order: the module is *started* (not merely uploaded) in
+`/openmrs/admin/modules/module.list`; `imaging`'s own Orthanc configuration points at a
+reachable Orthanc; and its study sync has run (patientview only reads what `imaging` has
+already synced - it never triggers a fetch itself).

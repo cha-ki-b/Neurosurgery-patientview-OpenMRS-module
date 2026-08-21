@@ -6,6 +6,7 @@ import org.openmrs.Patient;
 import org.openmrs.api.impl.BaseOpenmrsService;
 import org.openmrs.module.patientview.api.PatientviewService;
 import org.openmrs.module.patientview.api.dao.PatientviewDao;
+import org.openmrs.module.patientview.api.imaging.DicomStudyBridge;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
@@ -321,5 +322,180 @@ public class PatientviewServiceImpl extends BaseOpenmrsService implements Patien
         if (dao != null) {
             dao.savePathologyReport(patient, data);
         }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getMedicalTreatments(Patient patient) {
+        if (patient == null || dao == null) {
+            return new ArrayList<>();
+        }
+        return dao.getMedicalTreatments(patient);
+    }
+
+    @Override
+    @Transactional
+    public void saveMedicalTreatment(Patient patient, Map<String, Object> data) {
+        if (patient == null || data == null) {
+            throw new IllegalArgumentException("Patient and medical treatment entry data cannot be null");
+        }
+        if (dao != null) {
+            dao.saveMedicalTreatment(patient, data);
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getSurgicalTreatments(Patient patient) {
+        if (patient == null || dao == null) {
+            return new ArrayList<>();
+        }
+        return dao.getSurgicalTreatments(patient);
+    }
+
+    @Override
+    @Transactional
+    public void saveSurgicalTreatment(Patient patient, Map<String, Object> data) {
+        if (patient == null || data == null) {
+            throw new IllegalArgumentException("Patient and surgical treatment entry data cannot be null");
+        }
+        if (dao != null) {
+            dao.saveSurgicalTreatment(patient, data);
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getPostopEvolutions(Patient patient) {
+        if (patient == null || dao == null) {
+            return new ArrayList<>();
+        }
+        return dao.getPostopEvolutions(patient);
+    }
+
+    @Override
+    @Transactional
+    public void savePostopEvolution(Patient patient, Map<String, Object> data) {
+        if (patient == null || data == null) {
+            throw new IllegalArgumentException("Patient and post-operative evolution entry data cannot be null");
+        }
+        if (dao != null) {
+            dao.savePostopEvolution(patient, data);
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getSequelae(Patient patient) {
+        if (patient == null || dao == null) {
+            return new ArrayList<>();
+        }
+        return dao.getSequelae(patient);
+    }
+
+    @Override
+    @Transactional
+    public void saveSequelae(Patient patient, Map<String, Object> data) {
+        if (patient == null || data == null) {
+            throw new IllegalArgumentException("Patient and sequelae assessment data cannot be null");
+        }
+        if (dao != null) {
+            dao.saveSequelae(patient, data);
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getLabResults(Patient patient) {
+        if (patient == null || dao == null) {
+            return new ArrayList<>();
+        }
+        return dao.getLabResults(patient);
+    }
+
+    @Override
+    @Transactional
+    public void saveLabResult(Patient patient, Map<String, Object> data) {
+        if (patient == null || data == null) {
+            throw new IllegalArgumentException("Patient and laboratory result data cannot be null");
+        }
+        if (dao != null) {
+            dao.saveLabResult(patient, data);
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getDischarges(Patient patient) {
+        if (patient == null || dao == null) {
+            return new ArrayList<>();
+        }
+        return dao.getDischarges(patient);
+    }
+
+    @Override
+    @Transactional
+    public void saveDischarge(Patient patient, Map<String, Object> data) {
+        if (patient == null || data == null) {
+            throw new IllegalArgumentException("Patient and discharge episode data cannot be null");
+        }
+        if (dao != null) {
+            dao.saveDischarge(patient, data);
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getFollowUps(Patient patient) {
+        if (patient == null || dao == null) {
+            return new ArrayList<>();
+        }
+        return dao.getFollowUps(patient);
+    }
+
+    @Override
+    @Transactional
+    public void saveFollowUp(Patient patient, Map<String, Object> data) {
+        if (patient == null || data == null) {
+            throw new IllegalArgumentException("Patient and follow-up consultation data cannot be null");
+        }
+        if (dao != null) {
+            dao.saveFollowUp(patient, data);
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getImagingNotes(Patient patient) {
+        if (patient == null || dao == null) {
+            return new ArrayList<>();
+        }
+        return dao.getImagingNotes(patient);
+    }
+
+    @Override
+    @Transactional
+    public void saveImagingNote(Patient patient, Map<String, Object> data) {
+        if (patient == null || data == null) {
+            throw new IllegalArgumentException("Patient and imaging note data cannot be null");
+        }
+        if (dao != null) {
+            dao.saveImagingNote(patient, data);
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getImagingStudies(Patient patient) {
+        if (patient == null) {
+            return new ArrayList<>();
+        }
+        return DicomStudyBridge.getStudiesOfPatient(patient);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean isImagingModuleAvailable() {
+        return DicomStudyBridge.isAvailable();
     }
 }

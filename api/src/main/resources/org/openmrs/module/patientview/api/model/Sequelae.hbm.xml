@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="org.openmrs.module.patientview.api.model">
+    <class name="Sequelae" table="patientview_sequelae">
+        <id name="id" type="int" column="sequelae_id">
+            <generator class="native"/>
+        </id>
+        <property name="uuid" type="string" column="uuid" length="38" unique="true"/>
+        <many-to-one name="patient" class="org.openmrs.Patient" column="patient_id" not-null="true"/>
+        <property name="motorDeficit" type="string" column="motor_deficit" length="255"/>
+        <property name="sensoryDeficit" type="string" column="sensory_deficit" length="255"/>
+        <property name="aphasia" type="boolean" column="aphasia"/>
+        <property name="cognitiveDisorders" type="boolean" column="cognitive_disorders"/>
+        <property name="secondaryEpilepsy" type="boolean" column="secondary_epilepsy"/>
+        <property name="residualDisability" type="string" column="residual_disability" length="1000"/>
+        <property name="notes" type="string" column="notes" length="1000"/>
+        <many-to-one name="creator" class="org.openmrs.User" column="creator" not-null="true"/>
+        <property name="dateCreated" type="timestamp" column="date_created" not-null="true"/>
+    </class>
+</hibernate-mapping>

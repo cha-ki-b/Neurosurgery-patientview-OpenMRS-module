@@ -547,4 +547,302 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="patientview-2026-08-21-01" author="patientview-roadmap">
+        <comment>Creating the patientview_medical_treatment table (Fiche section 9, Prise en charge - traitement medical). Append-only, most recent row per patient is the current regimen.</comment>
+        <createTable tableName="patientview_medical_treatment">
+            <column name="medical_treatment_id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="uuid" type="char(38)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="patient_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="corticosteroids" type="boolean" defaultValueBoolean="false"/>
+            <column name="antiepileptics" type="boolean" defaultValueBoolean="false"/>
+            <column name="antibiotics" type="boolean" defaultValueBoolean="false"/>
+            <column name="anticoagulants" type="boolean" defaultValueBoolean="false"/>
+            <column name="analgesics" type="boolean" defaultValueBoolean="false"/>
+            <column name="other_treatments" type="varchar(500)"/>
+            <column name="notes" type="varchar(1000)"/>
+            <column name="creator" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_created" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="patientview_medtreat_patient_fk"
+            baseTableName="patientview_medical_treatment" baseColumnNames="patient_id"
+            referencedTableName="patient" referencedColumnNames="patient_id"/>
+        <addForeignKeyConstraint constraintName="patientview_medtreat_creator_fk"
+            baseTableName="patientview_medical_treatment" baseColumnNames="creator"
+            referencedTableName="users" referencedColumnNames="user_id"/>
+        <createIndex indexName="idx_patientview_medical_treatment_patient" tableName="patientview_medical_treatment">
+            <column name="patient_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="patientview-2026-08-21-02" author="patientview-roadmap">
+        <comment>Creating the patientview_surgical_treatment table (Fiche section 9, Prise en charge - traitement chirurgical). Append-only, one row per intervention. Distinct from patientview_surgical_history, which holds section 3's antecedents chirurgicaux (operations predating this episode).</comment>
+        <createTable tableName="patientview_surgical_treatment">
+            <column name="surgical_treatment_id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="uuid" type="char(38)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="patient_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="procedure_performed" type="varchar(255)"/>
+            <column name="resection_type" type="varchar(50)"/>
+            <column name="surgery_date" type="date"/>
+            <column name="duration_minutes" type="int"/>
+            <column name="surgeon" type="varchar(255)"/>
+            <column name="intraoperative_complications" type="varchar(1000)"/>
+            <column name="drain_placed" type="boolean" defaultValueBoolean="false"/>
+            <column name="catheter_placed" type="boolean" defaultValueBoolean="false"/>
+            <column name="notes" type="varchar(1000)"/>
+            <column name="creator" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_created" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="patientview_surgtreat_patient_fk"
+            baseTableName="patientview_surgical_treatment" baseColumnNames="patient_id"
+            referencedTableName="patient" referencedColumnNames="patient_id"/>
+        <addForeignKeyConstraint constraintName="patientview_surgtreat_creator_fk"
+            baseTableName="patientview_surgical_treatment" baseColumnNames="creator"
+            referencedTableName="users" referencedColumnNames="user_id"/>
+        <createIndex indexName="idx_patientview_surgical_treatment_patient" tableName="patientview_surgical_treatment">
+            <column name="patient_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="patientview-2026-08-21-03" author="patientview-roadmap">
+        <comment>Creating the patientview_postop_evolution table (Fiche section 11, Evolution postoperatoire). Append-only, one row per post-operative assessment.</comment>
+        <createTable tableName="patientview_postop_evolution">
+            <column name="postop_evolution_id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="uuid" type="char(38)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="patient_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="postop_gcs" type="int"/>
+            <column name="postop_karnofsky" type="int"/>
+            <column name="neurological_status" type="varchar(255)"/>
+            <column name="infection" type="boolean" defaultValueBoolean="false"/>
+            <column name="hemorrhage" type="boolean" defaultValueBoolean="false"/>
+            <column name="hydrocephalus" type="boolean" defaultValueBoolean="false"/>
+            <column name="csf_leak" type="boolean" defaultValueBoolean="false"/>
+            <column name="seizures" type="boolean" defaultValueBoolean="false"/>
+            <column name="deceased" type="boolean" defaultValueBoolean="false"/>
+            <column name="death_date" type="date"/>
+            <column name="notes" type="varchar(1000)"/>
+            <column name="creator" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_created" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="patientview_postop_patient_fk"
+            baseTableName="patientview_postop_evolution" baseColumnNames="patient_id"
+            referencedTableName="patient" referencedColumnNames="patient_id"/>
+        <addForeignKeyConstraint constraintName="patientview_postop_creator_fk"
+            baseTableName="patientview_postop_evolution" baseColumnNames="creator"
+            referencedTableName="users" referencedColumnNames="user_id"/>
+        <createIndex indexName="idx_patientview_postop_evolution_patient" tableName="patientview_postop_evolution">
+            <column name="patient_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="patientview-2026-08-21-04" author="patientview-roadmap">
+        <comment>Creating the patientview_sequelae table (Fiche section 12, Sequelles). Append-only, one row per assessment - kept separate from postop_evolution because sequelae are assessed at follow-up, long after the post-operative course.</comment>
+        <createTable tableName="patientview_sequelae">
+            <column name="sequelae_id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="uuid" type="char(38)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="patient_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="motor_deficit" type="varchar(255)"/>
+            <column name="sensory_deficit" type="varchar(255)"/>
+            <column name="aphasia" type="boolean" defaultValueBoolean="false"/>
+            <column name="cognitive_disorders" type="boolean" defaultValueBoolean="false"/>
+            <column name="secondary_epilepsy" type="boolean" defaultValueBoolean="false"/>
+            <column name="residual_disability" type="varchar(1000)"/>
+            <column name="notes" type="varchar(1000)"/>
+            <column name="creator" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_created" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="patientview_sequelae_patient_fk"
+            baseTableName="patientview_sequelae" baseColumnNames="patient_id"
+            referencedTableName="patient" referencedColumnNames="patient_id"/>
+        <addForeignKeyConstraint constraintName="patientview_sequelae_creator_fk"
+            baseTableName="patientview_sequelae" baseColumnNames="creator"
+            referencedTableName="users" referencedColumnNames="user_id"/>
+        <createIndex indexName="idx_patientview_sequelae_patient" tableName="patientview_sequelae">
+            <column name="patient_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="patientview-2026-08-21-05" author="patientview-roadmap">
+        <comment>Creating the patientview_lab_result table (Fiche section 7, Biologie). Append-only, one row per blood draw. Results are varchar rather than numeric: most of these lines are panels (NFS, ionogramme), not single values.</comment>
+        <createTable tableName="patientview_lab_result">
+            <column name="lab_result_id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="uuid" type="char(38)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="patient_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sample_date" type="date"/>
+            <column name="complete_blood_count" type="varchar(500)"/>
+            <column name="crp" type="varchar(100)"/>
+            <column name="ionogram" type="varchar(500)"/>
+            <column name="glycemia" type="varchar(100)"/>
+            <column name="creatinine" type="varchar(100)"/>
+            <column name="coagulation" type="varchar(500)"/>
+            <column name="blood_group" type="varchar(20)"/>
+            <column name="notes" type="varchar(1000)"/>
+            <column name="creator" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_created" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="patientview_lab_patient_fk"
+            baseTableName="patientview_lab_result" baseColumnNames="patient_id"
+            referencedTableName="patient" referencedColumnNames="patient_id"/>
+        <addForeignKeyConstraint constraintName="patientview_lab_creator_fk"
+            baseTableName="patientview_lab_result" baseColumnNames="creator"
+            referencedTableName="users" referencedColumnNames="user_id"/>
+        <createIndex indexName="idx_patientview_lab_result_patient" tableName="patientview_lab_result">
+            <column name="patient_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="patientview-2026-08-21-06" author="patientview-roadmap">
+        <comment>Creating the patientview_discharge table (Fiche section 13, Sortie). Append-only, one row per discharge episode.</comment>
+        <createTable tableName="patientview_discharge">
+            <column name="discharge_id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="uuid" type="char(38)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="patient_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="discharge_date" type="date"/>
+            <column name="discharge_mode" type="varchar(50)"/>
+            <column name="notes" type="varchar(1000)"/>
+            <column name="creator" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_created" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="patientview_discharge_patient_fk"
+            baseTableName="patientview_discharge" baseColumnNames="patient_id"
+            referencedTableName="patient" referencedColumnNames="patient_id"/>
+        <addForeignKeyConstraint constraintName="patientview_discharge_creator_fk"
+            baseTableName="patientview_discharge" baseColumnNames="creator"
+            referencedTableName="users" referencedColumnNames="user_id"/>
+        <createIndex indexName="idx_patientview_discharge_patient" tableName="patientview_discharge">
+            <column name="patient_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="patientview-2026-08-21-07" author="patientview-roadmap">
+        <comment>Creating the patientview_follow_up table (Fiche section 14, Suivi). Append-only, one row per follow-up consultation.</comment>
+        <createTable tableName="patientview_follow_up">
+            <column name="follow_up_id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="uuid" type="char(38)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="patient_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="consultation_date" type="date"/>
+            <column name="clinical_exam" type="varchar(1000)"/>
+            <column name="neurological_exam" type="varchar(1000)"/>
+            <column name="control_imaging" type="varchar(1000)"/>
+            <column name="recurrence" type="boolean" defaultValueBoolean="false"/>
+            <column name="current_treatment" type="varchar(500)"/>
+            <column name="next_consultation_date" type="date"/>
+            <column name="notes" type="varchar(1000)"/>
+            <column name="creator" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_created" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="patientview_followup_patient_fk"
+            baseTableName="patientview_follow_up" baseColumnNames="patient_id"
+            referencedTableName="patient" referencedColumnNames="patient_id"/>
+        <addForeignKeyConstraint constraintName="patientview_followup_creator_fk"
+            baseTableName="patientview_follow_up" baseColumnNames="creator"
+            referencedTableName="users" referencedColumnNames="user_id"/>
+        <createIndex indexName="idx_patientview_follow_up_patient" tableName="patientview_follow_up">
+            <column name="patient_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="patientview-2026-08-21-08" author="patientview-roadmap">
+        <comment>Creating the patientview_imaging_note table (Fiche section 6, Imagerie). Append-only, one row per compte rendu. Holds only the clinician's reading - the images and their DICOM metadata stay in Orthanc, read through the separate imaging module, and are not duplicated here.</comment>
+        <createTable tableName="patientview_imaging_note">
+            <column name="imaging_note_id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="uuid" type="char(38)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="patient_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="exam_type" type="varchar(50)"/>
+            <column name="exam_date" type="date"/>
+            <column name="findings" type="varchar(2000)"/>
+            <column name="notes" type="varchar(1000)"/>
+            <column name="creator" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_created" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="patientview_imgnote_patient_fk"
+            baseTableName="patientview_imaging_note" baseColumnNames="patient_id"
+            referencedTableName="patient" referencedColumnNames="patient_id"/>
+        <addForeignKeyConstraint constraintName="patientview_imgnote_creator_fk"
+            baseTableName="patientview_imaging_note" baseColumnNames="creator"
+            referencedTableName="users" referencedColumnNames="user_id"/>
+        <createIndex indexName="idx_patientview_imaging_note_patient" tableName="patientview_imaging_note">
+            <column name="patient_id"/>
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>

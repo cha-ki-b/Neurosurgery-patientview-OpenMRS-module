@@ -295,6 +295,68 @@ public class PatientviewServiceImplConnectionTest {
         assertTrue(patientviewService.getActiveAlerts(testPatient).isEmpty());
     }
 
+    @Test
+    public void phase3SavesShouldDelegateToDao() {
+        Map<String, Object> data = new java.util.HashMap<>();
+
+        patientviewService.saveMedicalTreatment(testPatient, data);
+        verify(dao).saveMedicalTreatment(testPatient, data);
+        patientviewService.saveSurgicalTreatment(testPatient, data);
+        verify(dao).saveSurgicalTreatment(testPatient, data);
+        patientviewService.savePostopEvolution(testPatient, data);
+        verify(dao).savePostopEvolution(testPatient, data);
+        patientviewService.saveSequelae(testPatient, data);
+        verify(dao).saveSequelae(testPatient, data);
+        patientviewService.saveLabResult(testPatient, data);
+        verify(dao).saveLabResult(testPatient, data);
+        patientviewService.saveDischarge(testPatient, data);
+        verify(dao).saveDischarge(testPatient, data);
+        patientviewService.saveFollowUp(testPatient, data);
+        verify(dao).saveFollowUp(testPatient, data);
+        patientviewService.saveImagingNote(testPatient, data);
+        verify(dao).saveImagingNote(testPatient, data);
+    }
+
+    @Test
+    public void phase3SavesShouldRejectNullPatientOrData() {
+        Map<String, Object> data = new java.util.HashMap<>();
+        assertSaveRejectsNulls(() -> patientviewService.saveMedicalTreatment(null, data));
+        assertSaveRejectsNulls(() -> patientviewService.saveSurgicalTreatment(testPatient, null));
+        assertSaveRejectsNulls(() -> patientviewService.savePostopEvolution(null, data));
+        assertSaveRejectsNulls(() -> patientviewService.saveSequelae(testPatient, null));
+        assertSaveRejectsNulls(() -> patientviewService.saveLabResult(null, data));
+        assertSaveRejectsNulls(() -> patientviewService.saveDischarge(testPatient, null));
+        assertSaveRejectsNulls(() -> patientviewService.saveFollowUp(null, data));
+        assertSaveRejectsNulls(() -> patientviewService.saveImagingNote(testPatient, null));
+        verifyNoInteractions(dao);
+    }
+
+    @Test
+    public void phase3GettersShouldReturnEmptyResultsForNullPatientWithoutTouchingDao() {
+        assertTrue(patientviewService.getMedicalTreatments(null).isEmpty());
+        assertTrue(patientviewService.getSurgicalTreatments(null).isEmpty());
+        assertTrue(patientviewService.getPostopEvolutions(null).isEmpty());
+        assertTrue(patientviewService.getSequelae(null).isEmpty());
+        assertTrue(patientviewService.getLabResults(null).isEmpty());
+        assertTrue(patientviewService.getDischarges(null).isEmpty());
+        assertTrue(patientviewService.getFollowUps(null).isEmpty());
+        assertTrue(patientviewService.getImagingNotes(null).isEmpty());
+        verifyNoInteractions(dao);
+    }
+
+    @Test
+    public void imagingStudiesShouldDegradeToAnEmptyListWhenTheImagingModuleIsAbsent() {
+        // The imaging module is deliberately not a dependency of this one, so it is not on this
+        // test's classpath - which is exactly the "not installed on this server" case that
+        // DicomStudyBridge has to survive without throwing. If this starts failing, the Imagerie
+        // tab has stopped degrading gracefully and will break the whole page on any deployment
+        // that does not run the imaging module.
+        assertTrue(patientviewService.getImagingStudies(testPatient).isEmpty());
+        assertFalse(patientviewService.isImagingModuleAvailable());
+        assertTrue(patientviewService.getImagingStudies(null).isEmpty());
+        verifyNoInteractions(dao);
+    }
+
     // Helper method to access private fields for testing
     private Object getPrivateField(Object obj, String fieldName) {
         try {
