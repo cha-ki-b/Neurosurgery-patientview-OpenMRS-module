@@ -12,7 +12,7 @@
 
 	<groupId>org.openmrs.module</groupId>
 	<artifactId>patientview</artifactId>
-	<version>1.2.1</version>
+	<version>1.2.2</version>
 	<packaging>pom</packaging>
 	<name>Neurosurgery Patient View</name>
 	<description>Custom patient view for neurosurgery department</description>
