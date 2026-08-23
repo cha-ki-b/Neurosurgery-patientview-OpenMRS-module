@@ -1,11 +1,10 @@
 <%
     def patient = config.patient
-    def safeFamilyName = (patient.familyName && patient.familyName.toString().trim().toLowerCase() != 'null') ? ui.format(patient.familyName) : ""
-    def safeGivenName = (patient.givenName && patient.givenName.toString().trim().toLowerCase() != 'null') ? ui.format(patient.givenName) : ""
+    def displayName = config.displayName
 %>
 <div class="neuro-patient-header">
     <div class="neuro-patient-info">
-        <h1>${ safeFamilyName }, ${ safeGivenName }</h1>
+        <h1>${ ui.format(displayName) }</h1>
         <div class="neuro-patient-identifiers">
             <% patient.activeIdentifiers.each { %>
                 <span class="neuro-identifier">${ it.identifier ? ui.format(it.identifier) : "" }</span>

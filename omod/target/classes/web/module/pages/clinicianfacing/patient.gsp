@@ -9,7 +9,7 @@ ${ ui.includeJavascript("patientview", "patientview.js") }
     var patientId = ${ patient.patientId };
     var breadcrumbs = [
         { icon: "icon-home", link: '/' + OPENMRS_CONTEXT_PATH + '/index.htm' },
-        { label: "${ (patient.familyName && patient.familyName.toString().trim().toLowerCase() != 'null') ? ui.format(patient.familyName) : '' }, ${ (patient.givenName && patient.givenName.toString().trim().toLowerCase() != 'null') ? ui.format(patient.givenName) : '' }" , link: "${ ui.pageLink("patientview", "clinicianfacing/patient", [ patientId: patient.uuid ]) }"}
+        { label: "${ ui.escapeJs(patientDisplayName) }" , link: "${ ui.pageLink("patientview", "clinicianfacing/patient", [ patientId: patient.uuid ]) }"}
     ];
 
     jq(function(){
@@ -21,7 +21,7 @@ ${ ui.includeJavascript("patientview", "patientview.js") }
     ${ ui.includeFragment("patientview", "sidebarNav", [patientUuid: patient.uuid, active: "resume"]) }
 
     <div class="neuro-content">
-        ${ ui.includeFragment("patientview", "patientHeader", [patient: patient]) }
+        ${ ui.includeFragment("patientview", "patientHeader", [patient: patient, displayName: patientDisplayName]) }
 
         <% if (accessDenied) { %>
             <div class="neuro-panel">

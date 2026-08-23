@@ -213,4 +213,155 @@ public interface PatientviewService extends OpenmrsService {
      */
     @Authorized({ PatientviewPrivileges.MANAGE_NEURO_DATA })
     void savePathologyReport(Patient patient, Map<String, Object> data);
+
+    /**
+     * Get medical treatment entries (Fiche section 9 - traitement medical) for a patient, most recent first
+     * @param patient the patient
+     * @return list of records
+     */
+    @Authorized({ PatientviewPrivileges.VIEW_NEURO_DATA })
+    List<Map<String, Object>> getMedicalTreatments(Patient patient);
+
+    /**
+     * Save a new medical treatment entry
+     * @param patient the patient
+     * @param data the record's fields
+     */
+    @Authorized({ PatientviewPrivileges.MANAGE_NEURO_DATA })
+    void saveMedicalTreatment(Patient patient, Map<String, Object> data);
+
+    /**
+     * Get surgical treatment entries (Fiche section 9 - traitement chirurgical) for a patient, most recent first
+     * @param patient the patient
+     * @return list of records
+     */
+    @Authorized({ PatientviewPrivileges.VIEW_NEURO_DATA })
+    List<Map<String, Object>> getSurgicalTreatments(Patient patient);
+
+    /**
+     * Save a new surgical treatment entry
+     * @param patient the patient
+     * @param data the record's fields
+     */
+    @Authorized({ PatientviewPrivileges.MANAGE_NEURO_DATA })
+    void saveSurgicalTreatment(Patient patient, Map<String, Object> data);
+
+    /**
+     * Get post-operative evolution entries (Fiche section 11) for a patient, most recent first
+     * @param patient the patient
+     * @return list of records
+     */
+    @Authorized({ PatientviewPrivileges.VIEW_NEURO_DATA })
+    List<Map<String, Object>> getPostopEvolutions(Patient patient);
+
+    /**
+     * Save a new post-operative evolution entry
+     * @param patient the patient
+     * @param data the record's fields
+     */
+    @Authorized({ PatientviewPrivileges.MANAGE_NEURO_DATA })
+    void savePostopEvolution(Patient patient, Map<String, Object> data);
+
+    /**
+     * Get sequelae assessments (Fiche section 12) for a patient, most recent first
+     * @param patient the patient
+     * @return list of records
+     */
+    @Authorized({ PatientviewPrivileges.VIEW_NEURO_DATA })
+    List<Map<String, Object>> getSequelae(Patient patient);
+
+    /**
+     * Save a new sequelae assessment
+     * @param patient the patient
+     * @param data the record's fields
+     */
+    @Authorized({ PatientviewPrivileges.MANAGE_NEURO_DATA })
+    void saveSequelae(Patient patient, Map<String, Object> data);
+
+    /**
+     * Get laboratory results (Fiche section 7) for a patient, most recent first
+     * @param patient the patient
+     * @return list of records
+     */
+    @Authorized({ PatientviewPrivileges.VIEW_NEURO_DATA })
+    List<Map<String, Object>> getLabResults(Patient patient);
+
+    /**
+     * Save a new laboratory result
+     * @param patient the patient
+     * @param data the record's fields
+     */
+    @Authorized({ PatientviewPrivileges.MANAGE_NEURO_DATA })
+    void saveLabResult(Patient patient, Map<String, Object> data);
+
+    /**
+     * Get discharge episodes (Fiche section 13) for a patient, most recent first
+     * @param patient the patient
+     * @return list of records
+     */
+    @Authorized({ PatientviewPrivileges.VIEW_NEURO_DATA })
+    List<Map<String, Object>> getDischarges(Patient patient);
+
+    /**
+     * Save a new discharge episode
+     * @param patient the patient
+     * @param data the record's fields
+     */
+    @Authorized({ PatientviewPrivileges.MANAGE_NEURO_DATA })
+    void saveDischarge(Patient patient, Map<String, Object> data);
+
+    /**
+     * Get follow-up consultations (Fiche section 14) for a patient, most recent first
+     * @param patient the patient
+     * @return list of records
+     */
+    @Authorized({ PatientviewPrivileges.VIEW_NEURO_DATA })
+    List<Map<String, Object>> getFollowUps(Patient patient);
+
+    /**
+     * Save a new follow-up consultation
+     * @param patient the patient
+     * @param data the record's fields
+     */
+    @Authorized({ PatientviewPrivileges.MANAGE_NEURO_DATA })
+    void saveFollowUp(Patient patient, Map<String, Object> data);
+
+    /**
+     * Get imaging notes / comptes rendus (Fiche section 6) for a patient, most recent first
+     * @param patient the patient
+     * @return list of records
+     */
+    @Authorized({ PatientviewPrivileges.VIEW_NEURO_DATA })
+    List<Map<String, Object>> getImagingNotes(Patient patient);
+
+    /**
+     * Save a new imaging note
+     * @param patient the patient
+     * @param data the record's fields
+     */
+    @Authorized({ PatientviewPrivileges.MANAGE_NEURO_DATA })
+    void saveImagingNote(Patient patient, Map<String, Object> data);
+
+    /**
+     * Get the patient's DICOM studies from the companion {@code imaging} module (Fiche section 6).
+     * <p>
+     * Unlike every other method here this reads no patientview table: the images and their
+     * metadata live in Orthanc, reached through the {@code imaging} module, and are deliberately
+     * not duplicated locally (see
+     * {@link org.openmrs.module.patientview.api.imaging.DicomStudyBridge}). It is exposed on this
+     * service anyway so that controllers keep having exactly one entry point, and so this
+     * module's own view privilege is enforced before another module's data is surfaced inside a
+     * patientview page.
+     * @param patient the patient
+     * @return one map per study, or empty if the imaging module is not installed or not started
+     */
+    @Authorized({ PatientviewPrivileges.VIEW_NEURO_DATA })
+    List<Map<String, Object>> getImagingStudies(Patient patient);
+
+    /**
+     * @return whether the companion {@code imaging} module can be reached at all, so the Imagerie
+     *         tab can tell "this patient has no studies" apart from "the PACS link is not
+     *         configured here"
+     */
+    boolean isImagingModuleAvailable();
 }

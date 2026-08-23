@@ -1,15 +1,25 @@
-C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\Medreport and custom imaging\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\model\NeurosurgicalDiagnosis.java
-C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\Medreport and custom imaging\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\dao\PatientviewDAOImpl.java
-C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\Medreport and custom imaging\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\PatientviewPrivileges.java
-C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\Medreport and custom imaging\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\model\AdmissionContext.java
-C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\Medreport and custom imaging\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\model\NeuroAssessment.java
-C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\Medreport and custom imaging\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\Item.java
-C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\Medreport and custom imaging\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\model\SurgicalHistory.java
-C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\Medreport and custom imaging\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\dao\PatientviewDao.java
-C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\Medreport and custom imaging\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\model\MedicalHistory.java
-C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\Medreport and custom imaging\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\PatientviewService.java
-C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\Medreport and custom imaging\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\PatientViewActivator.java
-C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\Medreport and custom imaging\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\model\VitalSigns.java
-C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\Medreport and custom imaging\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\impl\PatientviewServiceImpl.java
-C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\Medreport and custom imaging\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\model\NeuroExamDetail.java
-C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\Medreport and custom imaging\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\model\Pathology.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\model\Pathology.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\dao\PatientviewDao.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\model\FollowUp.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\model\NeuroAssessment.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\PatientviewService.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\PatientviewPrivileges.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\PatientViewActivator.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\model\NeurosurgicalDiagnosis.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\model\VitalSigns.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\model\MedicalTreatment.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\model\AdmissionContext.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\model\LabResult.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\impl\PatientviewServiceImpl.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\model\SurgicalTreatment.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\model\Discharge.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\Item.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\model\PostopEvolution.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\model\MedicalHistory.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\model\NeuroExamDetail.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\PatientviewDisplayName.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\dao\PatientviewDAOImpl.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\imaging\DicomStudyBridge.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\model\ImagingNote.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\model\Sequelae.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\api\src\main\java\org\openmrs\module\patientview\api\model\SurgicalHistory.java

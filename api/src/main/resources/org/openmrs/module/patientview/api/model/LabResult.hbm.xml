@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="org.openmrs.module.patientview.api.model">
+    <class name="LabResult" table="patientview_lab_result">
+        <id name="id" type="int" column="lab_result_id">
+            <generator class="native"/>
+        </id>
+        <property name="uuid" type="string" column="uuid" length="38" unique="true"/>
+        <many-to-one name="patient" class="org.openmrs.Patient" column="patient_id" not-null="true"/>
+        <property name="sampleDate" type="date" column="sample_date"/>
+        <property name="completeBloodCount" type="string" column="complete_blood_count" length="500"/>
+        <property name="crp" type="string" column="crp" length="100"/>
+        <property name="ionogram" type="string" column="ionogram" length="500"/>
+        <property name="glycemia" type="string" column="glycemia" length="100"/>
+        <property name="creatinine" type="string" column="creatinine" length="100"/>
+        <property name="coagulation" type="string" column="coagulation" length="500"/>
+        <property name="bloodGroup" type="string" column="blood_group" length="20"/>
+        <property name="notes" type="string" column="notes" length="1000"/>
+        <many-to-one name="creator" class="org.openmrs.User" column="creator" not-null="true"/>
+        <property name="dateCreated" type="timestamp" column="date_created" not-null="true"/>
+    </class>
+</hibernate-mapping>

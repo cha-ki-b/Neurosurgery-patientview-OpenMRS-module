@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: org.openmrs.module.patientview.api.PatientviewServiceImplConnectionTest
 -------------------------------------------------------------------------------
-Tests run: 18, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.695 s -- in org.openmrs.module.patientview.api.PatientviewServiceImplConnectionTest
+Tests run: 22, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.444 s -- in org.openmrs.module.patientview.api.PatientviewServiceImplConnectionTest

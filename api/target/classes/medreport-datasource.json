@@ -370,6 +370,338 @@
         { "id": "dateCreated", "type": "date", "sortWeight": 5,
           "label": { "fr": "Date d'enregistrement", "en": "Recorded on", "ar": "تاريخ التسجيل" } }
       ]
+    },
+
+    {
+      "id": "patientview.imaging",
+      "sortWeight": 90,
+      "label": {
+        "fr": "Imagerie",
+        "en": "Imaging",
+        "ar": "التصوير"
+      },
+      "description": {
+        "fr": "Comptes rendus d'imagerie rédigés par le service (Fiche §6). Les images elles-mêmes restent dans Orthanc et ne sont pas reproduites ici.",
+        "en": "Imaging reports written by the department (Fiche §6). The images themselves stay in Orthanc and are not reproduced here.",
+        "ar": "تقارير التصوير المدوّنة في الملف."
+      },
+      "repeating": true,
+      "recordTitleKey": "examDate",
+      "recordLimit": 10,
+      "source": {
+        "serviceClass": "org.openmrs.module.patientview.api.PatientviewService",
+        "method": "getImagingNotes",
+        "args": ["patient"]
+      },
+      "fields": [
+        { "id": "examType", "type": "text", "emphasis": true, "sortWeight": 0,
+          "label": { "fr": "Type d'examen", "en": "Examination type", "ar": "نوع الفحص" } },
+        { "id": "examDate", "type": "date", "sortWeight": 1,
+          "label": { "fr": "Date de l'examen", "en": "Examination date", "ar": "تاريخ الفحص" } },
+        { "id": "findings", "type": "longtext", "sortWeight": 2,
+          "label": { "fr": "Résultat / compte rendu", "en": "Findings / report", "ar": "النتيجة / التقرير" } },
+        { "id": "notes", "type": "longtext", "sortWeight": 3,
+          "label": { "fr": "Notes", "en": "Notes", "ar": "ملاحظات" } },
+        { "id": "dateCreated", "type": "date", "sortWeight": 4,
+          "label": { "fr": "Date d'enregistrement", "en": "Recorded on", "ar": "تاريخ التسجيل" } }
+      ]
+    },
+
+    {
+      "id": "patientview.biology",
+      "sortWeight": 100,
+      "label": {
+        "fr": "Biologie",
+        "en": "Laboratory results",
+        "ar": "التحاليل المخبرية"
+      },
+      "description": {
+        "fr": "Bilans biologiques, du plus récent au plus ancien (Fiche §7).",
+        "en": "Laboratory panels, most recent first (Fiche §7).",
+        "ar": "التحاليل من الأحدث إلى الأقدم."
+      },
+      "repeating": true,
+      "recordTitleKey": "sampleDate",
+      "recordLimit": 10,
+      "source": {
+        "serviceClass": "org.openmrs.module.patientview.api.PatientviewService",
+        "method": "getLabResults",
+        "args": ["patient"]
+      },
+      "fields": [
+        { "id": "sampleDate", "type": "date", "sortWeight": 0,
+          "label": { "fr": "Date du prélèvement", "en": "Sample date", "ar": "تاريخ أخذ العينة" } },
+        { "id": "completeBloodCount", "type": "longtext", "sortWeight": 1,
+          "label": { "fr": "NFS", "en": "Complete blood count", "ar": "تعداد الدم الكامل" } },
+        { "id": "crp", "type": "text", "sortWeight": 2,
+          "label": { "fr": "CRP", "en": "CRP", "ar": "بروتين سي التفاعلي" } },
+        { "id": "ionogram", "type": "longtext", "sortWeight": 3,
+          "label": { "fr": "Ionogramme", "en": "Electrolytes", "ar": "الشوارد" } },
+        { "id": "glycemia", "type": "text", "sortWeight": 4,
+          "label": { "fr": "Glycémie", "en": "Blood glucose", "ar": "سكر الدم" } },
+        { "id": "creatinine", "type": "text", "sortWeight": 5,
+          "label": { "fr": "Créatinine", "en": "Creatinine", "ar": "الكرياتينين" } },
+        { "id": "coagulation", "type": "longtext", "sortWeight": 6,
+          "label": { "fr": "Bilan de coagulation", "en": "Coagulation panel", "ar": "تخثر الدم" } },
+        { "id": "bloodGroup", "type": "text", "emphasis": true, "sortWeight": 7,
+          "label": { "fr": "Groupe sanguin", "en": "Blood group", "ar": "فصيلة الدم" } },
+        { "id": "notes", "type": "longtext", "sortWeight": 8,
+          "label": { "fr": "Notes", "en": "Notes", "ar": "ملاحظات" } },
+        { "id": "dateCreated", "type": "date", "sortWeight": 9,
+          "label": { "fr": "Date d'enregistrement", "en": "Recorded on", "ar": "تاريخ التسجيل" } }
+      ]
+    },
+
+    {
+      "id": "patientview.medicalTreatment",
+      "sortWeight": 110,
+      "label": {
+        "fr": "Traitement médical",
+        "en": "Medical treatment",
+        "ar": "العلاج الدوائي"
+      },
+      "description": {
+        "fr": "Traitement médical institué, du plus récent au plus ancien (Fiche §9).",
+        "en": "Medical treatment given, most recent first (Fiche §9).",
+        "ar": "العلاج الموصوف من الأحدث إلى الأقدم."
+      },
+      "repeating": true,
+      "recordTitleKey": "dateCreated",
+      "recordLimit": 5,
+      "source": {
+        "serviceClass": "org.openmrs.module.patientview.api.PatientviewService",
+        "method": "getMedicalTreatments",
+        "args": ["patient"]
+      },
+      "fields": [
+        { "id": "corticosteroids", "type": "boolean", "sortWeight": 0,
+          "label": { "fr": "Corticothérapie", "en": "Corticosteroids", "ar": "الكورتيكوستيرويدات" } },
+        { "id": "antiepileptics", "type": "boolean", "sortWeight": 1,
+          "label": { "fr": "Antiépileptiques", "en": "Antiepileptics", "ar": "مضادات الصرع" } },
+        { "id": "antibiotics", "type": "boolean", "sortWeight": 2,
+          "label": { "fr": "Antibiothérapie", "en": "Antibiotics", "ar": "المضادات الحيوية" } },
+        { "id": "anticoagulants", "type": "boolean", "sortWeight": 3,
+          "label": { "fr": "Anticoagulants", "en": "Anticoagulants", "ar": "مضادات التخثر" } },
+        { "id": "analgesics", "type": "boolean", "sortWeight": 4,
+          "label": { "fr": "Antalgiques", "en": "Analgesics", "ar": "المسكنات" } },
+        { "id": "otherTreatments", "type": "longtext", "sortWeight": 5,
+          "label": { "fr": "Autres traitements", "en": "Other treatments", "ar": "علاجات أخرى" } },
+        { "id": "notes", "type": "longtext", "sortWeight": 6,
+          "label": { "fr": "Notes", "en": "Notes", "ar": "ملاحظات" } },
+        { "id": "dateCreated", "type": "date", "sortWeight": 7,
+          "label": { "fr": "Date d'enregistrement", "en": "Recorded on", "ar": "تاريخ التسجيل" } }
+      ]
+    },
+
+    {
+      "id": "patientview.surgicalTreatment",
+      "sortWeight": 120,
+      "label": {
+        "fr": "Traitement chirurgical",
+        "en": "Surgical treatment",
+        "ar": "العلاج الجراحي"
+      },
+      "description": {
+        "fr": "Interventions réalisées pendant la prise en charge (Fiche §9) - distinct des antécédents chirurgicaux de la §3.",
+        "en": "Operations performed during this episode (Fiche §9) - distinct from §3's surgical history.",
+        "ar": "العمليات المنجزة خلال الإقامة."
+      },
+      "repeating": true,
+      "recordTitleKey": "surgeryDate",
+      "recordLimit": 5,
+      "source": {
+        "serviceClass": "org.openmrs.module.patientview.api.PatientviewService",
+        "method": "getSurgicalTreatments",
+        "args": ["patient"]
+      },
+      "fields": [
+        { "id": "procedurePerformed", "type": "text", "emphasis": true, "sortWeight": 0,
+          "label": { "fr": "Intervention réalisée", "en": "Procedure performed", "ar": "العملية المنجزة" } },
+        { "id": "resectionType", "type": "text", "sortWeight": 1,
+          "label": { "fr": "Type d'exérèse", "en": "Resection type", "ar": "نوع الاستئصال" } },
+        { "id": "surgeryDate", "type": "date", "sortWeight": 2,
+          "label": { "fr": "Date opératoire", "en": "Surgery date", "ar": "تاريخ العملية" } },
+        { "id": "durationMinutes", "type": "number", "unit": "min", "sortWeight": 3,
+          "label": { "fr": "Durée", "en": "Duration", "ar": "المدة" } },
+        { "id": "surgeon", "type": "text", "sortWeight": 4,
+          "label": { "fr": "Chirurgien", "en": "Surgeon", "ar": "الجراح" } },
+        { "id": "intraoperativeComplications", "type": "longtext", "sortWeight": 5,
+          "label": { "fr": "Complications peropératoires", "en": "Intraoperative complications", "ar": "مضاعفات أثناء العملية" } },
+        { "id": "drainPlaced", "type": "boolean", "sortWeight": 6,
+          "label": { "fr": "Drain posé", "en": "Drain placed", "ar": "تركيب مبزل" } },
+        { "id": "catheterPlaced", "type": "boolean", "sortWeight": 7,
+          "label": { "fr": "Sonde posée", "en": "Catheter placed", "ar": "تركيب قطرة" } },
+        { "id": "notes", "type": "longtext", "sortWeight": 8,
+          "label": { "fr": "Notes", "en": "Notes", "ar": "ملاحظات" } },
+        { "id": "dateCreated", "type": "date", "sortWeight": 9,
+          "label": { "fr": "Date d'enregistrement", "en": "Recorded on", "ar": "تاريخ التسجيل" } }
+      ]
+    },
+
+    {
+      "id": "patientview.postopEvolution",
+      "sortWeight": 130,
+      "label": {
+        "fr": "Évolution postopératoire",
+        "en": "Post-operative course",
+        "ar": "التطور بعد الجراحة"
+      },
+      "description": {
+        "fr": "Scores et complications postopératoires (Fiche §11).",
+        "en": "Post-operative scores and complications (Fiche §11).",
+        "ar": "الدرجات والمضاعفات بعد الجراحة."
+      },
+      "repeating": true,
+      "recordTitleKey": "dateCreated",
+      "recordLimit": 5,
+      "source": {
+        "serviceClass": "org.openmrs.module.patientview.api.PatientviewService",
+        "method": "getPostopEvolutions",
+        "args": ["patient"]
+      },
+      "fields": [
+        { "id": "postopGcs", "type": "number", "emphasis": true, "sortWeight": 0,
+          "label": { "fr": "Glasgow postopératoire", "en": "Post-operative Glasgow", "ar": "غلاسكو بعد الجراحة" } },
+        { "id": "postopKarnofsky", "type": "number", "unit": "%", "sortWeight": 1,
+          "label": { "fr": "Karnofsky postopératoire", "en": "Post-operative Karnofsky", "ar": "كارنوفسكي بعد الجراحة" } },
+        { "id": "neurologicalStatus", "type": "text", "sortWeight": 2,
+          "label": { "fr": "État neurologique", "en": "Neurological status", "ar": "الحالة العصبية" } },
+        { "id": "infection", "type": "boolean", "sortWeight": 3,
+          "label": { "fr": "Infection", "en": "Infection", "ar": "عدوى" } },
+        { "id": "hemorrhage", "type": "boolean", "sortWeight": 4,
+          "label": { "fr": "Hémorragie", "en": "Haemorrhage", "ar": "نزيف" } },
+        { "id": "hydrocephalus", "type": "boolean", "sortWeight": 5,
+          "label": { "fr": "Hydrocéphalie", "en": "Hydrocephalus", "ar": "استسقاء الرأس" } },
+        { "id": "csfLeak", "type": "boolean", "sortWeight": 6,
+          "label": { "fr": "Fuite de LCR", "en": "CSF leak", "ar": "تسرب السائل النخاعي" } },
+        { "id": "seizures", "type": "boolean", "sortWeight": 7,
+          "label": { "fr": "Convulsions", "en": "Seizures", "ar": "نوبات تشنجية" } },
+        { "id": "deceased", "type": "boolean", "sortWeight": 8,
+          "label": { "fr": "Décès", "en": "Death", "ar": "الوفاة" } },
+        { "id": "deathDate", "type": "date", "sortWeight": 9,
+          "label": { "fr": "Date du décès", "en": "Date of death", "ar": "تاريخ الوفاة" } },
+        { "id": "notes", "type": "longtext", "sortWeight": 10,
+          "label": { "fr": "Notes", "en": "Notes", "ar": "ملاحظات" } },
+        { "id": "dateCreated", "type": "date", "sortWeight": 11,
+          "label": { "fr": "Date d'enregistrement", "en": "Recorded on", "ar": "تاريخ التسجيل" } }
+      ]
+    },
+
+    {
+      "id": "patientview.sequelae",
+      "sortWeight": 140,
+      "label": {
+        "fr": "Séquelles",
+        "en": "Sequelae",
+        "ar": "المضاعفات المتبقية"
+      },
+      "description": {
+        "fr": "Déficits persistants évalués au suivi (Fiche §12).",
+        "en": "Persisting deficits assessed at follow-up (Fiche §12).",
+        "ar": "العجز المستمر المقيّم عند المتابعة."
+      },
+      "repeating": true,
+      "recordTitleKey": "dateCreated",
+      "recordLimit": 5,
+      "source": {
+        "serviceClass": "org.openmrs.module.patientview.api.PatientviewService",
+        "method": "getSequelae",
+        "args": ["patient"]
+      },
+      "fields": [
+        { "id": "motorDeficit", "type": "text", "emphasis": true, "sortWeight": 0,
+          "label": { "fr": "Déficit moteur", "en": "Motor deficit", "ar": "العجز الحركي" } },
+        { "id": "sensoryDeficit", "type": "text", "sortWeight": 1,
+          "label": { "fr": "Déficit sensitif", "en": "Sensory deficit", "ar": "العجز الحسي" } },
+        { "id": "aphasia", "type": "boolean", "sortWeight": 2,
+          "label": { "fr": "Aphasie", "en": "Aphasia", "ar": "الحبسة الكلامية" } },
+        { "id": "cognitiveDisorders", "type": "boolean", "sortWeight": 3,
+          "label": { "fr": "Troubles cognitifs", "en": "Cognitive disorders", "ar": "اضطرابات معرفية" } },
+        { "id": "secondaryEpilepsy", "type": "boolean", "sortWeight": 4,
+          "label": { "fr": "Épilepsie secondaire", "en": "Secondary epilepsy", "ar": "صرع ثانوي" } },
+        { "id": "residualDisability", "type": "longtext", "sortWeight": 5,
+          "label": { "fr": "Handicap résiduel", "en": "Residual disability", "ar": "إعاقة متبقية" } },
+        { "id": "notes", "type": "longtext", "sortWeight": 6,
+          "label": { "fr": "Notes", "en": "Notes", "ar": "ملاحظات" } },
+        { "id": "dateCreated", "type": "date", "sortWeight": 7,
+          "label": { "fr": "Date d'enregistrement", "en": "Recorded on", "ar": "تاريخ التسجيل" } }
+      ]
+    },
+
+    {
+      "id": "patientview.discharge",
+      "sortWeight": 150,
+      "label": {
+        "fr": "Sortie",
+        "en": "Discharge",
+        "ar": "الخروج"
+      },
+      "description": {
+        "fr": "Épisodes de sortie (Fiche §13).",
+        "en": "Discharge episodes (Fiche §13).",
+        "ar": "حالات الخروج."
+      },
+      "repeating": true,
+      "recordTitleKey": "dischargeDate",
+      "recordLimit": 5,
+      "source": {
+        "serviceClass": "org.openmrs.module.patientview.api.PatientviewService",
+        "method": "getDischarges",
+        "args": ["patient"]
+      },
+      "fields": [
+        { "id": "dischargeDate", "type": "date", "sortWeight": 0,
+          "label": { "fr": "Date de sortie", "en": "Discharge date", "ar": "تاريخ الخروج" } },
+        { "id": "dischargeMode", "type": "text", "emphasis": true, "sortWeight": 1,
+          "label": { "fr": "Mode de sortie", "en": "Discharge outcome", "ar": "حالة الخروج" } },
+        { "id": "notes", "type": "longtext", "sortWeight": 2,
+          "label": { "fr": "Notes", "en": "Notes", "ar": "ملاحظات" } },
+        { "id": "dateCreated", "type": "date", "sortWeight": 3,
+          "label": { "fr": "Date d'enregistrement", "en": "Recorded on", "ar": "تاريخ التسجيل" } }
+      ]
+    },
+
+    {
+      "id": "patientview.followUp",
+      "sortWeight": 160,
+      "label": {
+        "fr": "Suivi",
+        "en": "Follow-up",
+        "ar": "المتابعة"
+      },
+      "description": {
+        "fr": "Consultations de suivi, de la plus récente à la plus ancienne (Fiche §14).",
+        "en": "Follow-up consultations, most recent first (Fiche §14).",
+        "ar": "استشارات المتابعة من الأحدث إلى الأقدم."
+      },
+      "repeating": true,
+      "recordTitleKey": "consultationDate",
+      "recordLimit": 10,
+      "source": {
+        "serviceClass": "org.openmrs.module.patientview.api.PatientviewService",
+        "method": "getFollowUps",
+        "args": ["patient"]
+      },
+      "fields": [
+        { "id": "consultationDate", "type": "date", "sortWeight": 0,
+          "label": { "fr": "Date de consultation", "en": "Consultation date", "ar": "تاريخ الاستشارة" } },
+        { "id": "clinicalExam", "type": "longtext", "sortWeight": 1,
+          "label": { "fr": "Examen clinique", "en": "Clinical examination", "ar": "الفحص السريري" } },
+        { "id": "neurologicalExam", "type": "longtext", "sortWeight": 2,
+          "label": { "fr": "Examen neurologique", "en": "Neurological examination", "ar": "الفحص العصبي" } },
+        { "id": "controlImaging", "type": "longtext", "sortWeight": 3,
+          "label": { "fr": "IRM / scanner de contrôle", "en": "Control MRI / CT", "ar": "تصوير المراقبة" } },
+        { "id": "recurrence", "type": "boolean", "emphasis": true, "sortWeight": 4,
+          "label": { "fr": "Récidive", "en": "Recurrence", "ar": "الانتكاس" } },
+        { "id": "currentTreatment", "type": "text", "sortWeight": 5,
+          "label": { "fr": "Traitement en cours", "en": "Current treatment", "ar": "العلاج الحالي" } },
+        { "id": "nextConsultationDate", "type": "date", "sortWeight": 6,
+          "label": { "fr": "Prochaine consultation", "en": "Next consultation", "ar": "الاستشارة القادمة" } },
+        { "id": "notes", "type": "longtext", "sortWeight": 7,
+          "label": { "fr": "Notes", "en": "Notes", "ar": "ملاحظات" } },
+        { "id": "dateCreated", "type": "date", "sortWeight": 8,
+          "label": { "fr": "Date d'enregistrement", "en": "Recorded on", "ar": "تاريخ التسجيل" } }
+      ]
     }
   ]
 }

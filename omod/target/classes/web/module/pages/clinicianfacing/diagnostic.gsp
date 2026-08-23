@@ -10,7 +10,7 @@ ${ ui.includeJavascript("patientview", "patientview-crud.js") }
     var patientId = ${ patient.patientId };
     var breadcrumbs = [
         { icon: "icon-home", link: '/' + OPENMRS_CONTEXT_PATH + '/index.htm' },
-        { label: "${ (patient.familyName && patient.familyName.toString().trim().toLowerCase() != 'null') ? ui.format(patient.familyName) : '' }, ${ (patient.givenName && patient.givenName.toString().trim().toLowerCase() != 'null') ? ui.format(patient.givenName) : '' }" , link: "${ ui.pageLink("patientview", "clinicianfacing/patient", [ patientId: patient.uuid ]) }"},
+        { label: "${ ui.escapeJs(patientDisplayName) }" , link: "${ ui.pageLink("patientview", "clinicianfacing/patient", [ patientId: patient.uuid ]) }"},
         { label: "Diagnostic neurochirurgical" }
     ];
 </script>
@@ -19,7 +19,7 @@ ${ ui.includeJavascript("patientview", "patientview-crud.js") }
     ${ ui.includeFragment("patientview", "sidebarNav", [patientUuid: patient.uuid, active: "diagnostic"]) }
 
     <div class="neuro-content">
-        ${ ui.includeFragment("patientview", "patientHeader", [patient: patient]) }
+        ${ ui.includeFragment("patientview", "patientHeader", [patient: patient, displayName: patientDisplayName]) }
 
         <% if (accessDenied) { %>
             <div class="neuro-panel">
@@ -55,7 +55,7 @@ ${ ui.includeJavascript("patientview", "patientview-crud.js") }
                                 <option value="">--</option>
                                 <option value="Droite">Droite</option>
                                 <option value="Gauche">Gauche</option>
-                                <option value="Bilat\u00e9rale">Bilat&eacute;rale</option>
+                                <option value="Bilat&eacute;rale">Bilat&eacute;rale</option>
                                 <option value="Non applicable">Non applicable</option>
                             </select>
                         </label>

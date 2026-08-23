@@ -1,6 +1,6 @@
 /**
- * Generic CRUD helpers for the neurosurgery dashboard's Phase 1 tabs
- * (Antecedents, Examen clinique). Each record type is a simple
+ * Generic CRUD helpers for every tab of the neurosurgery dashboard.
+ * Each record type is a simple
  * "fill a form, POST it, reload the page" flow: the server always
  * renders the current list, so there is no client-side list state
  * to keep in sync.
@@ -68,4 +68,36 @@ function submitNeurosurgicalDiagnosis(event) {
 
 function submitPathologyReport(event) {
     return postPatientviewForm(openmrsContextPath + '/module/patientview/pathology.form', event);
+}
+
+function submitMedicalTreatment(event) {
+    return postPatientviewForm(openmrsContextPath + '/module/patientview/medicalTreatment.form', event);
+}
+
+function submitSurgicalTreatment(event) {
+    return postPatientviewForm(openmrsContextPath + '/module/patientview/surgicalTreatment.form', event);
+}
+
+function submitPostopEvolution(event) {
+    return postPatientviewForm(openmrsContextPath + '/module/patientview/postopEvolution.form', event);
+}
+
+function submitSequelae(event) {
+    return postPatientviewForm(openmrsContextPath + '/module/patientview/sequelae.form', event);
+}
+
+function submitLabResult(event) {
+    return postPatientviewForm(openmrsContextPath + '/module/patientview/labResult.form', event);
+}
+
+function submitDischarge(event) {
+    return postPatientviewForm(openmrsContextPath + '/module/patientview/discharge.form', event);
+}
+
+function submitFollowUp(event) {
+    return postPatientviewForm(openmrsContextPath + '/module/patientview/followUp.form', event);
+}
+
+function submitImagingNote(event) {
+    return postPatientviewForm(openmrsContextPath + '/module/patientview/imagingNote.form', event);
 }

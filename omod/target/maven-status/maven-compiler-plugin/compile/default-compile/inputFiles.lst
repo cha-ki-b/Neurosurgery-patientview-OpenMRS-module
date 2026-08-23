@@ -1,15 +1,28 @@
-C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\Medreport and custom imaging\neuro-patientview\omod\src\main\java\org\openmrs\module\patientview\page\controller\clinicianfacing\AntecedentsPageController.java
-C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\Medreport and custom imaging\neuro-patientview\omod\src\main\java\org\openmrs\module\patientview\web\controller\SurgicalHistoryRestController.java
-C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\Medreport and custom imaging\neuro-patientview\omod\src\main\java\org\openmrs\module\patientview\page\controller\clinicianfacing\DiagnosticPageController.java
-C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\Medreport and custom imaging\neuro-patientview\omod\src\main\java\org\openmrs\module\patientview\web\controller\PatientviewExceptionHandler.java
-C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\Medreport and custom imaging\neuro-patientview\omod\src\main\java\org\openmrs\module\patientview\web\controller\VitalSignsRestController.java
-C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\Medreport and custom imaging\neuro-patientview\omod\src\main\java\org\openmrs\module\patientview\web\controller\PathologyRestController.java
-C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\Medreport and custom imaging\neuro-patientview\omod\src\main\java\org\openmrs\module\patientview\fragment\controller\UsersFragmentController.java
-C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\Medreport and custom imaging\neuro-patientview\omod\src\main\java\org\openmrs\module\patientview\web\controller\NeuroAssessmentRestController.java
-C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\Medreport and custom imaging\neuro-patientview\omod\src\main\java\org\openmrs\module\patientview\page\controller\clinicianfacing\PatientPageController.java
-C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\Medreport and custom imaging\neuro-patientview\omod\src\main\java\org\openmrs\module\patientview\page\controller\clinicianfacing\AnatomopathologiePageController.java
-C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\Medreport and custom imaging\neuro-patientview\omod\src\main\java\org\openmrs\module\patientview\page\controller\clinicianfacing\ExamenCliniquePageController.java
-C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\Medreport and custom imaging\neuro-patientview\omod\src\main\java\org\openmrs\module\patientview\web\controller\NeuroExamDetailRestController.java
-C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\Medreport and custom imaging\neuro-patientview\omod\src\main\java\org\openmrs\module\patientview\web\controller\MedicalHistoryRestController.java
-C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\Medreport and custom imaging\neuro-patientview\omod\src\main\java\org\openmrs\module\patientview\web\controller\AdmissionContextRestController.java
-C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\Medreport and custom imaging\neuro-patientview\omod\src\main\java\org\openmrs\module\patientview\web\controller\NeurosurgicalDiagnosisRestController.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\omod\src\main\java\org\openmrs\module\patientview\page\controller\clinicianfacing\ExamenCliniquePageController.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\omod\src\main\java\org\openmrs\module\patientview\web\controller\NeurosurgicalDiagnosisRestController.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\omod\src\main\java\org\openmrs\module\patientview\fragment\controller\UsersFragmentController.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\omod\src\main\java\org\openmrs\module\patientview\web\controller\VitalSignsRestController.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\omod\src\main\java\org\openmrs\module\patientview\web\controller\PathologyRestController.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\omod\src\main\java\org\openmrs\module\patientview\page\controller\clinicianfacing\PriseEnChargePageController.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\omod\src\main\java\org\openmrs\module\patientview\web\controller\MedicalTreatmentRestController.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\omod\src\main\java\org\openmrs\module\patientview\web\controller\PostopEvolutionRestController.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\omod\src\main\java\org\openmrs\module\patientview\web\controller\NeuroAssessmentRestController.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\omod\src\main\java\org\openmrs\module\patientview\web\controller\SurgicalTreatmentRestController.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\omod\src\main\java\org\openmrs\module\patientview\page\controller\clinicianfacing\AntecedentsPageController.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\omod\src\main\java\org\openmrs\module\patientview\page\controller\clinicianfacing\PatientPageController.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\omod\src\main\java\org\openmrs\module\patientview\web\controller\DischargeRestController.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\omod\src\main\java\org\openmrs\module\patientview\page\controller\clinicianfacing\ImageriePageController.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\omod\src\main\java\org\openmrs\module\patientview\page\controller\clinicianfacing\SortiePageController.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\omod\src\main\java\org\openmrs\module\patientview\web\controller\LabResultRestController.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\omod\src\main\java\org\openmrs\module\patientview\page\controller\clinicianfacing\EvolutionPageController.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\omod\src\main\java\org\openmrs\module\patientview\web\controller\ImagingNoteRestController.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\omod\src\main\java\org\openmrs\module\patientview\page\controller\clinicianfacing\DiagnosticPageController.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\omod\src\main\java\org\openmrs\module\patientview\web\controller\SurgicalHistoryRestController.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\omod\src\main\java\org\openmrs\module\patientview\web\controller\MedicalHistoryRestController.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\omod\src\main\java\org\openmrs\module\patientview\page\controller\clinicianfacing\AnatomopathologiePageController.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\omod\src\main\java\org\openmrs\module\patientview\web\controller\SequelaeRestController.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\omod\src\main\java\org\openmrs\module\patientview\page\controller\clinicianfacing\BiologiePageController.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\omod\src\main\java\org\openmrs\module\patientview\web\controller\NeuroExamDetailRestController.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\omod\src\main\java\org\openmrs\module\patientview\web\controller\PatientviewExceptionHandler.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\omod\src\main\java\org\openmrs\module\patientview\web\controller\AdmissionContextRestController.java
+C:\Users\belam\OneDrive\Bureau\Stage CERIST été 2026\neuro-patientview\omod\src\main\java\org\openmrs\module\patientview\web\controller\FollowUpRestController.java

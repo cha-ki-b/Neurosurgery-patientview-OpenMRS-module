@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="org.openmrs.module.patientview.api.model">
+    <class name="Discharge" table="patientview_discharge">
+        <id name="id" type="int" column="discharge_id">
+            <generator class="native"/>
+        </id>
+        <property name="uuid" type="string" column="uuid" length="38" unique="true"/>
+        <many-to-one name="patient" class="org.openmrs.Patient" column="patient_id" not-null="true"/>
+        <property name="dischargeDate" type="date" column="discharge_date"/>
+        <property name="dischargeMode" type="string" column="discharge_mode" length="50"/>
+        <property name="notes" type="string" column="notes" length="1000"/>
+        <many-to-one name="creator" class="org.openmrs.User" column="creator" not-null="true"/>
+        <property name="dateCreated" type="timestamp" column="date_created" not-null="true"/>
+    </class>
+</hibernate-mapping>

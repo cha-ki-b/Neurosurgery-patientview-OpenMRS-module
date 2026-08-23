@@ -82,22 +82,28 @@ public class ModuleWiringTest {
         Document config = parseClasspathXml("config.xml");
         String mappingFiles = config.getElementsByTagName("mappingFiles").item(0).getTextContent();
 
-        assertTrue("config.xml <mappingFiles> should list NeuroAssessment.hbm.xml",
-                mappingFiles.contains("org/openmrs/module/patientview/api/model/NeuroAssessment.hbm.xml"));
-        assertTrue("config.xml <mappingFiles> should list SurgicalHistory.hbm.xml",
-                mappingFiles.contains("org/openmrs/module/patientview/api/model/SurgicalHistory.hbm.xml"));
-        assertTrue("config.xml <mappingFiles> should list MedicalHistory.hbm.xml",
-                mappingFiles.contains("org/openmrs/module/patientview/api/model/MedicalHistory.hbm.xml"));
-        assertTrue("config.xml <mappingFiles> should list AdmissionContext.hbm.xml",
-                mappingFiles.contains("org/openmrs/module/patientview/api/model/AdmissionContext.hbm.xml"));
-        assertTrue("config.xml <mappingFiles> should list VitalSigns.hbm.xml",
-                mappingFiles.contains("org/openmrs/module/patientview/api/model/VitalSigns.hbm.xml"));
-        assertTrue("config.xml <mappingFiles> should list NeuroExamDetail.hbm.xml",
-                mappingFiles.contains("org/openmrs/module/patientview/api/model/NeuroExamDetail.hbm.xml"));
-        assertTrue("config.xml <mappingFiles> should list NeurosurgicalDiagnosis.hbm.xml",
-                mappingFiles.contains("org/openmrs/module/patientview/api/model/NeurosurgicalDiagnosis.hbm.xml"));
-        assertTrue("config.xml <mappingFiles> should list Pathology.hbm.xml",
-                mappingFiles.contains("org/openmrs/module/patientview/api/model/Pathology.hbm.xml"));
+        // Checked against the mapping files that actually exist, rather than a hand-written list:
+        // an entity whose .hbm.xml is never registered here compiles, packages and deploys fine,
+        // then fails at the first HQL query against it with "not mapped" - long after the build
+        // went green. There are sixteen mapped classes now, and a list maintained by hand is the
+        // wrong tool: this way a mapping added later is covered without anyone remembering to
+        // come back and extend the test.
+        File modelDir = new File("../api/src/main/resources/org/openmrs/module/patientview/api/model");
+        assertTrue("mapping directory not found (test must run with the omod module directory as "
+                + "CWD): " + modelDir.getAbsolutePath(), modelDir.isDirectory());
+        File[] mappings = modelDir.listFiles(new java.io.FilenameFilter() {
+            public boolean accept(File dir, String name) {
+                return name.endsWith(".hbm.xml");
+            }
+        });
+        assertNotNull("mapping directory should be readable", mappings);
+        assertTrue("expected to find the module's .hbm.xml files, found " + mappings.length,
+                mappings.length >= 16);
+        for (File mapping : mappings) {
+            String path = "org/openmrs/module/patientview/api/model/" + mapping.getName();
+            assertTrue("config.xml <mappingFiles> does not list " + mapping.getName()
+                    + " - Hibernate will not know that class exists", mappingFiles.contains(path));
+        }
     }
 
     @Test
@@ -237,14 +243,10 @@ public class ModuleWiringTest {
         // "patient" - there is no "config" variable on page templates (that's a fragment-only
         // concept), and "patient" is not wrapped in a PatientDomainWrapper (no nested ".patient",
         // no ".primaryIdentifiers"). Both mistakes throw MissingPropertyException at render time.
-        String[] pages = {
-                "src/main/webapp/pages/clinicianfacing/patient.gsp",
-                "src/main/webapp/pages/clinicianfacing/antecedents.gsp",
-                "src/main/webapp/pages/clinicianfacing/examenClinique.gsp",
-                "src/main/webapp/pages/clinicianfacing/diagnostic.gsp",
-                "src/main/webapp/pages/clinicianfacing/anatomopathologie.gsp"
-        };
-        for (String page : pages) {
+        // Enumerated from disk rather than hardcoded: the module has ten pages now, and a
+        // hand-maintained list is a check that quietly stops covering whatever is added next.
+        for (File file : listGspFiles(new File("src/main/webapp/pages"))) {
+            String page = file.getPath();
             String gsp = readProjectFile(page);
             assertFalse(page + " must not reference \"config.\" - page templates have no such variable",
                     gsp.contains("config."));
@@ -254,6 +256,75 @@ public class ModuleWiringTest {
             assertFalse(page + " must not reference \"patient.primaryIdentifiers\" - that getter exists "
                     + "only on PatientDomainWrapper; use patient.activeIdentifiers instead",
                     gsp.contains("patient.primaryIdentifiers"));
+        }
+    }
+
+    /**
+     * Every .gsp under a directory, recursively. Enumerating from disk rather than hardcoding a
+     * list means a page added later is covered automatically - the same reason
+     * everyRestControllerMustEnforceAPrivilegeCheck() scans its directory instead of naming files.
+     */
+    private java.util.List<File> listGspFiles(File directory) {
+        assertTrue("directory not found (test must run with the omod module directory as CWD): "
+                + directory.getAbsolutePath(), directory.isDirectory());
+        java.util.List<File> found = new java.util.ArrayList<File>();
+        File[] children = directory.listFiles();
+        assertNotNull("directory should be readable: " + directory, children);
+        for (File child : children) {
+            if (child.isDirectory()) {
+                found.addAll(listGspFiles(child));
+            } else if (child.getName().endsWith(".gsp")) {
+                found.add(child);
+            }
+        }
+        return found;
+    }
+
+    @Test
+    public void gspsMustNotFormatPatientNamesThemselves() throws Exception {
+        // The "null null" header regressed three times running, because every page and every
+        // breadcrumb formatted the name inline: each fix had to be copy-pasted into five places
+        // and one of them was always missed or subtly different (PatientviewDisplayName's class
+        // doc has the full history). The name is now assembled once in Java, unit-tested, and
+        // handed to the templates as the "patientDisplayName" model attribute. A template
+        // reaching for the raw name parts again IS the regression, so fail the build on it.
+        java.util.List<File> templates = listGspFiles(new File("src/main/webapp/pages"));
+        templates.addAll(listGspFiles(new File("src/main/webapp/fragments")));
+        assertFalse("expected to find some .gsp templates to check", templates.isEmpty());
+        for (File file : templates) {
+            String gsp = readProjectFile(file.getPath());
+            assertFalse(file.getPath() + " must not read patient.familyName - render the "
+                            + "patientDisplayName model attribute instead "
+                            + "(PatientviewDisplayName.of(patient))",
+                    gsp.contains("patient.familyName"));
+            assertFalse(file.getPath() + " must not read patient.givenName - render the "
+                            + "patientDisplayName model attribute instead "
+                            + "(PatientviewDisplayName.of(patient))",
+                    gsp.contains("patient.givenName"));
+        }
+    }
+
+    @Test
+    public void everyPageControllerMustProvideThePatientDisplayName() throws Exception {
+        // The other half of the guard above: forbidding the templates from formatting the name
+        // only helps if every page controller actually supplies it. A page that renders
+        // patientHeader without it shows an empty <h1> and throws on the breadcrumb.
+        File dir = new File("src/main/java/org/openmrs/module/patientview/page/controller/clinicianfacing");
+        assertTrue("page controller directory not found (test must run with the omod module "
+                + "directory as CWD): " + dir.getAbsolutePath(), dir.isDirectory());
+        File[] files = dir.listFiles(new java.io.FilenameFilter() {
+            public boolean accept(File d, String name) {
+                return name.endsWith("PageController.java");
+            }
+        });
+        assertNotNull("page controller directory should be readable", files);
+        assertTrue("expected to find at least one page controller", files.length > 0);
+        for (File file : files) {
+            String source = new String(java.nio.file.Files.readAllBytes(file.toPath()), "UTF-8");
+            assertTrue(file.getName() + " must put PatientviewDisplayName.of(patient) into the "
+                            + "model as \"patientDisplayName\"",
+                    source.contains("model.addAttribute(\"patientDisplayName\", "
+                            + "PatientviewDisplayName.of(patient))"));
         }
     }
 

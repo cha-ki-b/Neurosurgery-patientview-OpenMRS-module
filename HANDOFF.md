@@ -1,6 +1,6 @@
 # Handoff: completing the Patientview module
 
-You're picking up an OpenMRS module (`patientview`, currently v1.2.1) that replaces the
+You're picking up an OpenMRS module (`patientview`, currently v1.2.2) that replaces the
 default patient dashboard with a neurosurgery-specific one, built against the "Fiche de
 Neurochirurgie" paper form. 5 of 10 tabs are done. **Read `README.md` first** — it documents
 the architecture, the security model, and every non-obvious gotcha this module has already
@@ -45,7 +45,7 @@ hit in production. This file only covers what's left and how to add it safely.
    likely can't run `mvn compile`. Compensate with static verification before calling
    anything done: every `.xml`/`.json` file parses; every `.gsp`'s `<% %>` scriptlets and
    `${ }` expressions are brace-balanced (a naive check must track `<% %>` and HTML text
-   *separately* — an `if`/`each` block's braces legitimately span multiple scriptlets with
+   _separately_ — an `if`/`each` block's braces legitimately span multiple scriptlets with
    HTML in between); every DAO/Service interface method has a matching impl; every GSP field
    reference matches an actual key the DAO map-builder puts there. Extend `ModuleWiringTest`
    for any new packaging convention you introduce, the same way existing checks were added.
@@ -75,7 +75,7 @@ stack. For each new category:
 8. **GSP page** (`webapp/pages/clinicianfacing/xxx.gsp`) — form + record list, following the
    exact markup/CSS-class conventions of `diagnostic.gsp`.
 9. **Sidebar** (`fragments/sidebarNav.gsp`) — turn that tab's `<span class="neuro-nav-item
-   neuro-nav-disabled">` placeholder into a real `<a>` link.
+neuro-nav-disabled">` placeholder into a real `<a>` link.
 10. **JS** (`resources/scripts/patientview-crud.js`) — one `submitXxx(event)` function using
     the existing `postPatientviewForm` helper.
 11. **Tests** — extend `ModuleWiringTest` (mapping file registered + exists on disk, page
@@ -89,7 +89,9 @@ stack. For each new category:
 ## Remaining tabs, in suggested order (all fields per the Fiche de Neurochirurgie)
 
 ### 1. Prise en charge — Fiche §9
+
 Two related record types, or one combined entity — your call:
+
 - **Traitement médical**: corticothérapie, antiépileptiques, antibiothérapie,
   anticoagulants, antalgiques, autres traitements (free text or booleans, match the
   `MedicalHistory` checklist style).
@@ -99,10 +101,13 @@ Two related record types, or one combined entity — your call:
   rather than duplicating it outright — read that entity first.
 
 ### 2. Anatomopathologie ↔ Diagnostic cross-check
+
 Already done — skip. (Listed here only so you don't recreate it.)
 
 ### 3. Évolution postopératoire & Séquelles — Fiche §11-12
+
 One tab, two logical sections:
+
 - **Évolution**: Glasgow postopératoire, Karnofsky postopératoire, état neurologique,
   infection (bool), hémorragie (bool), hydrocéphalie (bool), fuite de LCR (bool), convulsions
   (bool), décès (bool + date).
@@ -110,11 +115,13 @@ One tab, two logical sections:
   épilepsie secondaire (bool), handicap résiduel (free text).
 
 ### 4. Biologie — Fiche §7
+
 NFS, CRP, ionogramme, glycémie, créatinine, bilan de coagulation, groupe sanguin — all
 free-text/decimal result fields with a date, one row per lab draw. Straightforward, smallest
 remaining tab.
 
 ### 5. Sortie & Suivi — Fiche §13-14
+
 - **Sortie**: date de sortie, mode de sortie (Guérison/Amélioration/Stable/Aggravation/Décès
   — select), one row per discharge episode.
 - **Suivi**: date de consultation, examen clinique, examen neurologique, IRM/scanner de
@@ -122,10 +129,12 @@ remaining tab.
   one row per follow-up visit.
 
 ### 6. Imagerie — Fiche §6, Orthanc-backed (do this last, it's the most involved)
+
 Different shape from everything else — read-heavy, external system, no local write form for
 the imaging data itself:
+
 - Local fields (small, module-owned, same pattern as above): type d'examen (TDM/IRM/
-  Angio-TDM/Angio-IRM), date, résultat/compte-rendu — these are clinical *notes about* an
+  Angio-TDM/Angio-IRM), date, résultat/compte-rendu — these are clinical _notes about_ an
   imaging study, not the images.
 - Orthanc integration (the real work): call Orthanc's REST API (`/patients`, `/studies`) to
   list studies whose DICOM PatientID `(0010,0020)` matches this patient's OpenMRS identifier,

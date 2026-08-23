@@ -8,7 +8,7 @@
             <generator class="native"/>
         </id>
         <property name="uuid" type="string" column="uuid" length="38" unique="true"/>
-        <many-to-one name="patient" class="org.openmrs.Patient" column="patient_id" not-null="true" unique="true"/>
+        <many-to-one name="patient" class="org.openmrs.Patient" column="patient_id" not-null="true"/>
         <property name="diabetes" type="boolean" column="diabetes"/>
         <property name="hypertension" type="boolean" column="hypertension"/>
         <property name="epilepsy" type="boolean" column="epilepsy"/>
