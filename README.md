@@ -286,8 +286,10 @@ credentials moved from hardcoded YAML into a `.env` file. These files update the
 
 - All ten tabs are built (§2); the Fiche de Neurochirurgie is fully covered.
 - **105 of the 120 concept-backed fields have no concept yet** (§15). The export machinery is
-  complete and tested, but only §4 Constantes, §5 Scores, the two §11 scores and §8
-  Diagnostic actually leave the module today. This is dictionary work needing a clinician and a
+  complete and tested, but at most §4 Constantes, §5 Scores, the two §11 scores and §8
+  Diagnostic can leave the module today - and on a stock Reference Application dictionary it is
+  only §4 and §8, because a demo install carries 444 concepts and no Glasgow or Karnofsky at
+  all (§15). This is dictionary work needing a clinician and a
   CIEL curator, not a developer - and `tools/ciel_match.py` turns it from 105 manual searches
   into reviewing a pre-filled table. OCL disabled anonymous API access, so the codes have to be
   resolved against the dictionary as loaded on your own server; that script does exactly that
@@ -602,9 +604,21 @@ the neurosurgical diagnosis exports correctly today, with the lesion descriptors
 
 ### What is exportable today, without curation
 
-Four of the sixteen sets: §4 Constantes, §5 Scores, §11 (the two scores only) and §8 Diagnostic.
-Everything else is wired end to end and exports nothing until its concepts are filled in - which
-the coverage report states plainly rather than failing quietly.
+At most four of the sixteen sets - §4 Constantes, §5 Scores, §11 (the two scores only) and §8
+Diagnostic - and **which of those actually export depends on the dictionary loaded on your
+server**, not on this module. A declared code that your dictionary does not carry resolves to
+nothing, and the field is skipped and reported.
+
+Measured against a stock Reference Application (444 concepts, the demo subset), it is **two**:
+§4 Constantes, whose eight CIEL vitals codes all resolve, and §8 Diagnostic, which needs no
+dictionary at all. §5 and §11's scores are declared against LOINC, and a stock install carries
+only 11 LOINC mappings - all vitals - so Glasgow and Karnofsky resolve to nothing there. That is
+not a defect in the mapping; those are the correct LOINC codes. It means **full CIEL has to be
+loaded** before the neurosurgical half of the Fiche can export anything.
+
+Run the coverage report against your own server rather than trusting this paragraph - it
+distinguishes "no concept declared" from "declared but not resolvable here", which is exactly
+this distinction.
 
 ### The guard against drift
 
