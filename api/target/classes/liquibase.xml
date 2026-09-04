@@ -844,5 +844,43 @@
             <column name="patient_id"/>
         </createIndex>
     </changeSet>
+    <changeSet id="patientview-2026-09-04-01" author="patientview-roadmap">
+        <comment>Creating the patientview_fhir_projection ledger (1.4.0). Records which patientview row has already been projected into the core clinical model as an Encounter + observations, so the projector is idempotent: the live path after a save and the backfill of historical rows are the same operation, and re-running either is safe. Append-only like every other table here, and doubles as the audit trail of which encounter carries which Fiche row.</comment>
+        <createTable tableName="patientview_fhir_projection">
+            <column name="fhir_projection_id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="uuid" type="char(38)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="patient_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="source_set" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="source_uuid" type="char(38)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="encounter_uuid" type="char(38)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_created" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="patientview_fhirproj_patient_fk"
+            baseTableName="patientview_fhir_projection" baseColumnNames="patient_id"
+            referencedTableName="patient" referencedColumnNames="patient_id"/>
+        <!-- The idempotency guarantee: one projection per source row, enforced by the database
+             rather than only by the code that checks before inserting. -->
+        <createIndex indexName="idx_patientview_fhirproj_source" tableName="patientview_fhir_projection" unique="true">
+            <column name="source_set"/>
+            <column name="source_uuid"/>
+        </createIndex>
+        <createIndex indexName="idx_patientview_fhirproj_patient" tableName="patientview_fhir_projection">
+            <column name="patient_id"/>
+        </createIndex>
+    </changeSet>
 
 </databaseChangeLog>
