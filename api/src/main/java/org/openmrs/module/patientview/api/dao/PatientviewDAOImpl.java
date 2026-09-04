@@ -129,30 +129,37 @@ public class PatientviewDAOImpl implements PatientviewDao {
 
     @Override
     public Map<String, Object> getMedicalHistory(Patient patient) {
+        // "Current" medical history is simply the newest version - the table is append-only like
+        // every other one here (see saveMedicalHistory). Delegating keeps one map-builder.
+        List<Map<String, Object>> versions = getMedicalHistoryVersions(patient);
+        return versions.isEmpty() ? new HashMap<>() : versions.get(0);
+    }
+
+    @Override
+    public List<Map<String, Object>> getMedicalHistoryVersions(Patient patient) {
         List<MedicalHistory> results = sessionFactory.getCurrentSession()
                 .createQuery("from MedicalHistory m where m.patient = :patient order by m.dateCreated desc",
                         MedicalHistory.class)
                 .setParameter("patient", patient)
-                .setMaxResults(1)
                 .list();
 
-        Map<String, Object> map = new HashMap<>();
-        if (results.isEmpty()) {
-            return map;
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (MedicalHistory history : results) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("uuid", history.getUuid());
+            map.put("diabetes", history.isDiabetes());
+            map.put("hypertension", history.isHypertension());
+            map.put("epilepsy", history.isEpilepsy());
+            map.put("stroke", history.isStroke());
+            map.put("heartDisease", history.isHeartDisease());
+            map.put("renalFailure", history.isRenalFailure());
+            map.put("allergies", history.getAllergies());
+            map.put("chronicTreatment", history.getChronicTreatment());
+            map.put("otherHistory", history.getOtherHistory());
+            map.put("dateChanged", history.getDateCreated());
+            result.add(map);
         }
-        MedicalHistory history = results.get(0);
-        map.put("uuid", history.getUuid());
-        map.put("diabetes", history.isDiabetes());
-        map.put("hypertension", history.isHypertension());
-        map.put("epilepsy", history.isEpilepsy());
-        map.put("stroke", history.isStroke());
-        map.put("heartDisease", history.isHeartDisease());
-        map.put("renalFailure", history.isRenalFailure());
-        map.put("allergies", history.getAllergies());
-        map.put("chronicTreatment", history.getChronicTreatment());
-        map.put("otherHistory", history.getOtherHistory());
-        map.put("dateChanged", history.getDateCreated());
-        return map;
+        return result;
     }
 
     @Override

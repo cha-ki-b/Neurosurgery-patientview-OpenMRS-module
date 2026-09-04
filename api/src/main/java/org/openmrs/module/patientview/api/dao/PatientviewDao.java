@@ -48,6 +48,15 @@ public interface PatientviewDao {
     Map<String, Object> getMedicalHistory(Patient patient);
 
     /**
+     * Every recorded version of the patient's medical history, newest first. The table is
+     * append-only, so this is the full history rather than only the current state - which is what
+     * the core-model projection needs, since it exports each version as its own dated encounter.
+     * @param patient the patient
+     * @return every version, newest first; empty when none is recorded
+     */
+    List<Map<String, Object>> getMedicalHistoryVersions(Patient patient);
+
+    /**
      * Create or update the medical history for a patient (one record per patient)
      * @param patient the patient
      * @param data the medical history fields

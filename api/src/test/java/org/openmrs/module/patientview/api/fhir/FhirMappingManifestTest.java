@@ -298,10 +298,20 @@ public class FhirMappingManifestTest {
                 setsThatExportToday++;
             }
         }
+        // The field count is exact: it can only change with a schema change, and a silent change
+        // means the manifest and the DAO have drifted (which the parity test would also catch).
         assertEquals("projectable observation fields", 120, total);
-        assertEquals("fields shipping with a verified concept - raising this is the curation task",
-                15, curated);
-        assertEquals("sets that export something before any curation", 4, setsThatExportToday);
+
+        // Curation counts are floors, not equalities. Curating concepts is expected, routine work
+        // - tools/ciel_match.py exists to make it routine - so an exact assertion would fail the
+        // build on every batch and train people to edit the number without reading it. A floor
+        // still catches the regression that matters: concepts silently disappearing from the
+        // manifest. Raise these as curation progresses.
+        assertTrue("curation has regressed: only " + curated + " fields carry a concept, "
+                        + "down from the 15 this release shipped with",
+                curated >= 15);
+        assertTrue("only " + setsThatExportToday + " sets export anything, down from 4",
+                setsThatExportToday >= 4);
     }
 
     @Test

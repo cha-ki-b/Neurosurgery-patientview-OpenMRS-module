@@ -105,7 +105,7 @@
     {
       "id": "patientview.medicalHistory",
       "ficheSection": "3",
-      "sourceGetter": "getMedicalHistory",
+      "sourceGetter": "getMedicalHistoryVersions",
       "target": "Observation",
       "dateKey": "dateChanged",
       "fields": [

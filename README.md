@@ -285,15 +285,13 @@ credentials moved from hardcoded YAML into a `.env` file. These files update the
 ## 11. Known limitations / roadmap
 
 - All ten tabs are built (§2); the Fiche de Neurochirurgie is fully covered.
-- **106 of the 121 FHIR-projectable fields have no concept yet** (§15). The export machinery
-  is complete and tested, but only §4 Constantes, §5 Scores, the two §11 scores and §8
-  Diagnostic actually leave the module today. This is dictionary curation work needing a
-  clinician and a CIEL curator, not a developer; `fhirProjection.form`'s coverage report
-  names exactly which fields are outstanding. OCL disabled anonymous API access, so the
-  codes have to be resolved against the dictionary as loaded on your own server.
-- Medical history projects only its **current** version, because the DAO exposes only that
-  one; earlier versions stay in `patientview_medical_history`. Every other set projects its
-  full history.
+- **105 of the 120 concept-backed fields have no concept yet** (§15). The export machinery is
+  complete and tested, but only §4 Constantes, §5 Scores, the two §11 scores and §8
+  Diagnostic actually leave the module today. This is dictionary work needing a clinician and a
+  CIEL curator, not a developer - and `tools/ciel_match.py` turns it from 105 manual searches
+  into reviewing a pre-filled table. OCL disabled anonymous API access, so the codes have to be
+  resolved against the dictionary as loaded on your own server; that script does exactly that
+  without needing a Python database driver.
 - The lab panels (NFS, ionogramme, coagulation) and CRP/glycémie/créatinine are stored as
   text by this module, so mapping them to CIEL's *numeric* concepts will be reported as a
   datatype mismatch rather than silently coerced. Either map them to text-datatype concepts
@@ -563,11 +561,28 @@ later `effectiveDateTime`, not a different code.
 concept for it either, because it is derived from height and weight and FHIR consumers
 recompute it.
 
-The remaining **106 fields await curation**, which is a dictionary task rather than a coding
+Medical history exports **every** recorded version, not just the current one: the table is
+append-only, so each version becomes its own dated encounter, which is what makes a
+"comorbidities as of this admission" query answerable. `getMedicalHistoryVersions` returns them
+all and `getMedicalHistory` delegates to it for the first, so there is still one map-builder.
+
+The remaining **105 fields await curation**, which is a dictionary task rather than a coding
 one: search your loaded CIEL for the clinical label in the field's `name`, then add
-`{"source": "CIEL", "code": "<id>"}` to its `concept` array. No rebuild is needed to *read* the
-manifest differently, but the file is packaged in the omod, so shipping new codes means
-rebuilding. Ask the running server what is left:
+`{"source": "CIEL", "code": "<id>"}` to its `concept` array. The file is packaged in the omod,
+so shipping new codes means rebuilding.
+
+Do not do that by hand. **`tools/ciel_match.py`** exists to make curation routine: `sql` mode
+emits one query that searches your dictionary for every uncurated label at once - matching on
+any synonym, since that is where a clinician's wording usually lands, while reporting the fully
+specified name so the reviewer sees what the concept really is - and `apply` mode reads the
+approved rows back into the manifest. It needs no Python database driver: you run the SQL
+through `docker exec`, so it works against a running container or a restored dump. It refuses
+to apply if more than one candidate is still present for a field, and warns when a candidate's
+datatype cannot hold the field's value, which catches a mismatch during review rather than
+after a rebuild. A name match is a suggestion, not a decision - a clinician makes the review
+pass.
+
+Ask the running server what is left:
 
 ```
 GET  /openmrs/ws/rest/../module/patientview/fhirProjection.form   # coverage report
@@ -597,8 +612,12 @@ in both directions, because a string-keyed manifest drifts silently:
 - every set has a `case` in `ObsProjector.fetchRows`, or it would read no rows at all;
 - every getter exposes the `uuid` the ledger keys on;
 - concepts are declared with a mapping source, never a bare local id;
-- the shipped curation counts (121 fields / 15 coded / 4 sets exporting) are asserted, so they
-  cannot drift unnoticed as curation proceeds - **update these numbers as you curate.**
+- the field count (120) is asserted exactly, since it can only change with a schema change;
+  the curation counts are asserted as **floors** (≥ 15 coded, ≥ 4 sets exporting) rather than
+  equalities, because curation is expected routine work and an exact assertion would fail the
+  build on every batch and train people to edit the number without reading it. A floor still
+  catches the regression that matters - concepts disappearing from the manifest. `ciel_match.py`
+  prints the new figure to raise it to.
 
 `QuickDeploymentTest` covers the other half: it boots a real Spring/Hibernate context, so the
 new mapping file, the projector bean and its transaction proxy are exercised rather than assumed.

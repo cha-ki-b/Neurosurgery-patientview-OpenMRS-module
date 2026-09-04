@@ -419,12 +419,7 @@ public class ObsProjector {
             case "patientview.admissionContext":
                 return dao.getAdmissionContexts(patient);
             case "patientview.medicalHistory":
-                // The DAO exposes only the current version of medical history, so only that
-                // version is projected; earlier versions stay in patientview's own table.
-                Map<String, Object> current = dao.getMedicalHistory(patient);
-                return current.isEmpty()
-                        ? Collections.<Map<String, Object>>emptyList()
-                        : Collections.singletonList(current);
+                return dao.getMedicalHistoryVersions(patient);
             case "patientview.surgicalHistory":
                 return dao.getSurgicalHistory(patient);
             case "patientview.vitalSigns":
