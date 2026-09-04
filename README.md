@@ -8,7 +8,7 @@ sequelae, discharge and follow-up - with full CRUD backed by MySQL and a two-tie
 privilege model so nurses and surgeons/radiologists see different levels of access.
 
 **Target platform:** OpenMRS Platform 2.5.9 / Reference Application 2.12.2
-**Module ID:** `patientview` · **Package:** `org.openmrs.module.patientview` · **Version:** `1.4.0`
+**Module ID:** `patientview` · **Package:** `org.openmrs.module.patientview` · **Version:** `1.4.1`
 
 Thanks to `hanyG175` and `bouzenaali` for starting the job: [Repo](https://github.com/hanyG175/openmrs-patientview-module)
 
@@ -325,6 +325,11 @@ credentials moved from hardcoded YAML into a `.env` file. These files update the
 
 ## 12. Version history
 
+- **1.4.1** — Medical history now exports every recorded version rather than only the
+  current one, so each becomes its own dated encounter. Adds `tools/ciel_match.py`, which
+  turns the concept backlog from 105 manual dictionary searches into a review pass, and
+  relaxes the curation assertions from equalities to floors so a curation batch no longer
+  fails the build (§15).
 - **1.4.0** — Exposes the whole record through the FHIR2 API, without depending on FHIR2:
   an append-only projection of every set into core `Encounter`/`Obs`/`Condition`, driven by a
   declarative CIEL mapping manifest, with an idempotency ledger, a per-patient and server-wide
