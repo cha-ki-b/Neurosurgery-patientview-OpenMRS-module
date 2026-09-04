@@ -308,10 +308,10 @@ public class FhirMappingManifestTest {
         // still catches the regression that matters: concepts silently disappearing from the
         // manifest. Raise these as curation progresses.
         assertTrue("curation has regressed: only " + curated + " fields carry a concept, "
-                        + "down from the 15 this release shipped with",
-                curated >= 15);
-        assertTrue("only " + setsThatExportToday + " sets export anything, down from 4",
-                setsThatExportToday >= 4);
+                        + "down from the 26 this release shipped with",
+                curated >= 26);
+        assertTrue("only " + setsThatExportToday + " sets export anything, down from 13",
+                setsThatExportToday >= 13);
     }
 
     @Test
