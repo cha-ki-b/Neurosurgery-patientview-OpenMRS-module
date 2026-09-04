@@ -357,6 +357,23 @@ public class PatientviewServiceImplConnectionTest {
         verifyNoInteractions(dao);
     }
 
+    @Test
+    public void projectionMethodsShouldBeInertWhenNoProjectorIsWired() {
+        // These unit tests never inject an ObsProjector, which is also the state of a module whose
+        // Spring context has not wired one. Every save must behave exactly as it did before 1.4.0,
+        // and the projection entry points must degrade to doing nothing rather than failing.
+        assertTrue(patientviewService.projectToClinicalModel(testPatient).isEmpty());
+        assertTrue(patientviewService.projectAllPatients().isEmpty());
+        assertTrue(patientviewService.getFhirCoverageReport().isEmpty());
+        verifyNoInteractions(dao);
+    }
+
+    @Test
+    public void projectingANullPatientShouldNotTouchTheDao() {
+        assertTrue(patientviewService.projectToClinicalModel(null).isEmpty());
+        verifyNoInteractions(dao);
+    }
+
     // Helper method to access private fields for testing
     private Object getPrivateField(Object obj, String fieldName) {
         try {

@@ -101,3 +101,30 @@ function submitFollowUp(event) {
 function submitImagingNote(event) {
     return postPatientviewForm(openmrsContextPath + '/module/patientview/imagingNote.form', event);
 }
+
+/**
+ * Exports this patient's records into the core clinical model, so the FHIR2 module can serve
+ * them. Records save automatically; this is for rows created before 1.4.0, or a re-run after
+ * new concepts have been curated. Safe to press twice - already-exported rows are skipped.
+ */
+function syncFhirProjection() {
+    jQuery.ajax({
+        url: openmrsContextPath + '/module/patientview/fhirProjection.form',
+        type: 'POST',
+        data: { patientId: patientId },
+        success: function(response) {
+            if (response && response.success) {
+                var d = response.data || {};
+                showSuccessMessage('Export FHIR : ' + (d.encounters || 0) + ' consultation(s), '
+                    + (d.observations || 0) + ' observation(s), '
+                    + (d.conditions || 0) + ' diagnostic(s).');
+            } else {
+                showErrorMessage((response && response.message) || 'Erreur lors de l'export');
+            }
+        },
+        error: function(xhr) {
+            showErrorMessage((xhr && xhr.responseJSON && xhr.responseJSON.message)
+                || 'Erreur lors de l'export');
+        }
+    });
+}

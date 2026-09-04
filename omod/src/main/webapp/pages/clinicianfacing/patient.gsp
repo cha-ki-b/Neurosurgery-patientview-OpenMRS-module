@@ -4,6 +4,7 @@
 
 ${ ui.includeCss("patientview", "patientview.css") }
 ${ ui.includeJavascript("patientview", "patientview.js") }
+${ ui.includeJavascript("patientview", "patientview-crud.js") }
 
 <script type="text/javascript">
     var patientId = ${ patient.patientId };
@@ -81,6 +82,7 @@ ${ ui.includeJavascript("patientview", "patientview.js") }
         <div class="neuro-quick-actions">
             <% if (canManage) { %>
                 <button class="neuro-action-btn" onclick="addNeuroAssessment(patientId)">Nouvelle &eacute;valuation Glasgow</button>
+                <button class="neuro-action-btn" onclick="syncFhirProjection()" title="Exporte les donn&eacute;es de ce patient vers le mod&egrave;le clinique OpenMRS, o&ugrave; l'API FHIR les expose">Export FHIR</button>
             <% } %>
             <a class="neuro-action-btn" href="${ ui.pageLink("patientview", "clinicianfacing/antecedents", [patientId: patient.uuid]) }">Ant&eacute;c&eacute;dents</a>
             <a class="neuro-action-btn" href="${ ui.pageLink("patientview", "clinicianfacing/examenClinique", [patientId: patient.uuid]) }">Examen clinique</a>

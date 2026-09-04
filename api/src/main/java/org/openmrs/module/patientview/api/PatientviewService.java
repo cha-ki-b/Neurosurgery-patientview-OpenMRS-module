@@ -364,4 +364,34 @@ public interface PatientviewService extends OpenmrsService {
      *         configured here"
      */
     boolean isImagingModuleAvailable();
+    /**
+     * Projects this patient's neurosurgery records into the core OpenMRS clinical model
+     * (Encounter / Obs / Condition), so the FHIR2 module can serve them as Observation,
+     * DiagnosticReport and Condition resources.
+     * <p>
+     * Rows already projected are skipped, so this is safe to call repeatedly - it is the same
+     * operation that runs automatically after every save, and the per-patient backfill of
+     * records created before 1.4.0.
+     * @param patient the patient
+     * @return counts of what was written, plus any fields awaiting dictionary curation
+     */
+    @Authorized({ PatientviewPrivileges.MANAGE_NEURO_DATA })
+    Map<String, Object> projectToClinicalModel(Patient patient);
+
+    /**
+     * Server-wide backfill: projects every patient holding a neurosurgery record. Intended as a
+     * one-off after upgrading, or after curating new concepts.
+     * @return number of patients processed and any failures
+     */
+    @Authorized({ PatientviewPrivileges.MANAGE_NEURO_DATA })
+    Map<String, Object> projectAllPatients();
+
+    /**
+     * Read-only audit of how much of the FHIR mapping manifest is usable on this server: which
+     * fields still need a concept, and which declared concepts do not resolve against the
+     * dictionary as loaded here. Writes nothing.
+     * @return the coverage report
+     */
+    @Authorized({ PatientviewPrivileges.VIEW_NEURO_DATA })
+    Map<String, Object> getFhirCoverageReport();
 }
