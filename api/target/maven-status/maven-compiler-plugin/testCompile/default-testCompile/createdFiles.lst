@@ -1,3 +1,4 @@
+org\openmrs\module\patientview\api\fhir\FhirMappingManifestTest.class
 org\openmrs\module\patientview\api\PatientviewDisplayNameTest.class
 org\openmrs\module\patientview\api\PatientviewServiceImplConnectionTest.class
 org\openmrs\module\patientview\MedreportDatasourceManifestTest.class

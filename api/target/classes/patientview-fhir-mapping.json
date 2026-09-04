@@ -1,0 +1,1111 @@
+{
+  "_comment": [
+    "Maps this module's clinical fields onto concepts, so the observation projector can write",
+    "them into the core OpenMRS model, where the FHIR2 module can see them.",
+    "",
+    "patientview gains NO dependency on fhir2 from this file or from the code that reads it.",
+    "The projector calls only ObsService, EncounterService, ConceptService and ConditionService",
+    "- core platform APIs. FHIR2 reads the core model on its own. That indirection is what",
+    "makes this survive an fhir2 major upgrade: the one thing that has broken downstream",
+    "modules across fhir2 majors is its DAO layer, which nothing here touches.",
+    "",
+    "CONCEPTS ARE REFERENCED BY MAPPING, NEVER BY NUMERIC ID. OpenMRS concept_id values are",
+    "install-specific - they depend on how CIEL was loaded - so the projector resolves every",
+    "field with ConceptService.getConceptByMapping(code, source) at runtime.",
+    "",
+    "A field with an empty \"concept\" list is NOT YET CURATED: the projector skips it and",
+    "reports it. Filling these in is a dictionary task, not a coding task - search your loaded",
+    "CIEL for the concept named in \"name\", then add {\"source\": \"CIEL\", \"code\": \"<id>\"}.",
+    "Ask for the coverage report (FhirProjectionRestController's GET) for the current count.",
+    "",
+    "The codes present were each verified against a public source: the CIEL vitals codes",
+    "against openmrs-module-referenceapplication's own htmlforms/vitals.xml, and the LOINC",
+    "codes against loinc.org. Nothing here was guessed.",
+    "",
+    "\"type\" must match what PatientviewDAOImpl actually puts in its map, and the projector",
+    "refuses to write a value into a concept of an incompatible datatype rather than corrupt",
+    "it - so a text-stored lab result mapped to a numeric concept is reported, not silently",
+    "mangled."
+  ],
+  "encounterType": {
+    "uuid": "7ce8b143-3b32-44d9-afff-c4a620c34da7",
+    "name": "Neurosurgery Fiche",
+    "description": "Encounter created by the patientview module to carry one Fiche de Neurochirurgie record into the core clinical model."
+  },
+  "sets": [
+    {
+      "id": "patientview.admissionContext",
+      "ficheSection": "2",
+      "sourceGetter": "getAdmissionContexts",
+      "target": "Encounter + Observation",
+      "dateKey": "dateCreated",
+      "fields": [
+        {
+          "id": "admissionReason",
+          "name": "Reason for admission",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "symptomOnsetDate",
+          "name": "Date of symptom onset",
+          "type": "date",
+          "concept": []
+        },
+        {
+          "id": "diagnosisDelayDays",
+          "name": "Delay to diagnosis (days)",
+          "type": "numeric",
+          "concept": []
+        },
+        {
+          "id": "admissionDiagnosis",
+          "name": "Admission diagnosis",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "primaryDiagnosis",
+          "name": "Primary diagnosis",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "secondaryDiagnoses",
+          "name": "Secondary diagnoses",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "profession",
+          "name": "Occupation",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "referringPhysician",
+          "name": "Referring physician",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "responsibleNeurosurgeon",
+          "name": "Responsible neurosurgeon",
+          "type": "text",
+          "concept": []
+        }
+      ],
+      "excluded": [
+        {
+          "id": "dateCreated",
+          "reason": "carries the encounter datetime"
+        }
+      ]
+    },
+    {
+      "id": "patientview.medicalHistory",
+      "ficheSection": "3",
+      "sourceGetter": "getMedicalHistoryVersions",
+      "target": "Observation",
+      "dateKey": "dateChanged",
+      "fields": [
+        {
+          "id": "diabetes",
+          "name": "Diabetes mellitus",
+          "type": "boolean",
+          "concept": []
+        },
+        {
+          "id": "hypertension",
+          "name": "Hypertension",
+          "type": "boolean",
+          "concept": []
+        },
+        {
+          "id": "epilepsy",
+          "name": "Epilepsy",
+          "type": "boolean",
+          "concept": []
+        },
+        {
+          "id": "stroke",
+          "name": "Cerebrovascular accident",
+          "type": "boolean",
+          "concept": []
+        },
+        {
+          "id": "heartDisease",
+          "name": "Heart disease",
+          "type": "boolean",
+          "concept": []
+        },
+        {
+          "id": "renalFailure",
+          "name": "Renal failure",
+          "type": "boolean",
+          "concept": []
+        },
+        {
+          "id": "allergies",
+          "name": "Allergies",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "chronicTreatment",
+          "name": "Current chronic medication",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "otherHistory",
+          "name": "Other medical history",
+          "type": "text",
+          "concept": []
+        }
+      ],
+      "excluded": [
+        {
+          "id": "dateChanged",
+          "reason": "carries the encounter datetime"
+        }
+      ]
+    },
+    {
+      "id": "patientview.surgicalHistory",
+      "ficheSection": "3",
+      "sourceGetter": "getSurgicalHistory",
+      "target": "Observation",
+      "dateKey": "date",
+      "fields": [
+        {
+          "id": "procedure",
+          "name": "Previous surgical procedure",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "surgeon",
+          "name": "Surgeon",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "outcome",
+          "name": "Surgical outcome",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "location",
+          "name": "Facility where performed",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "notes",
+          "name": "Clinical note",
+          "type": "text",
+          "concept": []
+        }
+      ],
+      "excluded": [
+        {
+          "id": "date",
+          "reason": "carries the encounter datetime"
+        }
+      ]
+    },
+    {
+      "id": "patientview.vitalSigns",
+      "ficheSection": "4",
+      "sourceGetter": "getVitalSigns",
+      "target": "Observation",
+      "dateKey": "examDate",
+      "fields": [
+        {
+          "id": "temperature",
+          "name": "Temperature (C)",
+          "type": "numeric",
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "5088"
+            }
+          ]
+        },
+        {
+          "id": "bpSystolic",
+          "name": "Systolic blood pressure",
+          "type": "numeric",
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "5085"
+            }
+          ]
+        },
+        {
+          "id": "bpDiastolic",
+          "name": "Diastolic blood pressure",
+          "type": "numeric",
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "5086"
+            }
+          ]
+        },
+        {
+          "id": "heartRate",
+          "name": "Pulse",
+          "type": "numeric",
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "5087"
+            }
+          ]
+        },
+        {
+          "id": "respiratoryRate",
+          "name": "Respiratory rate",
+          "type": "numeric",
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "5242"
+            }
+          ]
+        },
+        {
+          "id": "spo2",
+          "name": "Arterial blood oxygen saturation (pulse oximeter)",
+          "type": "numeric",
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "5092"
+            }
+          ]
+        },
+        {
+          "id": "weightKg",
+          "name": "Weight (kg)",
+          "type": "numeric",
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "5089"
+            }
+          ]
+        },
+        {
+          "id": "heightCm",
+          "name": "Height (cm)",
+          "type": "numeric",
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "5090"
+            }
+          ]
+        }
+      ],
+      "excluded": [
+        {
+          "id": "examDate",
+          "reason": "carries the encounter datetime"
+        },
+        {
+          "id": "bmi",
+          "reason": "derived from height and weight - the reference application's vitals form stores no concept for it, and FHIR consumers recompute it"
+        }
+      ]
+    },
+    {
+      "id": "patientview.neuroAssessment",
+      "ficheSection": "5",
+      "sourceGetter": "getNeuroAssessments",
+      "target": "Observation",
+      "dateKey": "date",
+      "groupConcept": {
+        "name": "Glasgow coma scale panel",
+        "concept": [
+          {
+            "source": "LOINC",
+            "code": "35088-4"
+          }
+        ]
+      },
+      "fields": [
+        {
+          "id": "gcs",
+          "name": "Glasgow coma score total",
+          "type": "numeric",
+          "concept": [
+            {
+              "source": "LOINC",
+              "code": "9269-2"
+            }
+          ]
+        },
+        {
+          "id": "eyeResponse",
+          "name": "Glasgow coma score eye opening",
+          "type": "numeric",
+          "concept": [
+            {
+              "source": "LOINC",
+              "code": "9267-6"
+            }
+          ]
+        },
+        {
+          "id": "verbalResponse",
+          "name": "Glasgow coma score verbal",
+          "type": "numeric",
+          "concept": [
+            {
+              "source": "LOINC",
+              "code": "9270-0"
+            }
+          ]
+        },
+        {
+          "id": "motorResponse",
+          "name": "Glasgow coma score motor",
+          "type": "numeric",
+          "concept": [
+            {
+              "source": "LOINC",
+              "code": "9268-4"
+            }
+          ]
+        },
+        {
+          "id": "karnofskyScore",
+          "name": "Karnofsky Performance Status score",
+          "type": "numeric",
+          "concept": [
+            {
+              "source": "LOINC",
+              "code": "89243-0"
+            }
+          ]
+        },
+        {
+          "id": "notes",
+          "name": "Clinical note",
+          "type": "text",
+          "concept": []
+        }
+      ],
+      "excluded": [
+        {
+          "id": "date",
+          "reason": "carries the encounter datetime"
+        }
+      ]
+    },
+    {
+      "id": "patientview.neuroExam",
+      "ficheSection": "5",
+      "sourceGetter": "getNeuroExamDetails",
+      "target": "Observation",
+      "dateKey": "examDate",
+      "fields": [
+        {
+          "id": "orientation",
+          "name": "Orientation",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "language",
+          "name": "Speech and language",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "memory",
+          "name": "Memory",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "cranialNerves",
+          "name": "Cranial nerve examination",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "motorDeficit",
+          "name": "Motor deficit",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "sensoryDeficit",
+          "name": "Sensory deficit",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "reflexes",
+          "name": "Deep tendon reflexes",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "plantarReflex",
+          "name": "Plantar reflex",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "coordination",
+          "name": "Coordination",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "gait",
+          "name": "Gait",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "balance",
+          "name": "Balance",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "cerebellarSigns",
+          "name": "Cerebellar signs",
+          "type": "boolean",
+          "concept": []
+        },
+        {
+          "id": "pyramidalSyndrome",
+          "name": "Pyramidal syndrome",
+          "type": "boolean",
+          "concept": []
+        },
+        {
+          "id": "meningealSyndrome",
+          "name": "Meningeal syndrome",
+          "type": "boolean",
+          "concept": []
+        },
+        {
+          "id": "seizures",
+          "name": "Seizures",
+          "type": "boolean",
+          "concept": []
+        },
+        {
+          "id": "headache",
+          "name": "Headache",
+          "type": "boolean",
+          "concept": []
+        },
+        {
+          "id": "vomiting",
+          "name": "Vomiting",
+          "type": "boolean",
+          "concept": []
+        },
+        {
+          "id": "visualDisturbances",
+          "name": "Visual disturbance",
+          "type": "boolean",
+          "concept": []
+        },
+        {
+          "id": "sphincterDisturbances",
+          "name": "Sphincter disturbance",
+          "type": "boolean",
+          "concept": []
+        },
+        {
+          "id": "notes",
+          "name": "Clinical note",
+          "type": "text",
+          "concept": []
+        }
+      ],
+      "excluded": [
+        {
+          "id": "examDate",
+          "reason": "carries the encounter datetime"
+        }
+      ]
+    },
+    {
+      "id": "patientview.imagingNote",
+      "ficheSection": "6",
+      "sourceGetter": "getImagingNotes",
+      "target": "DiagnosticReport",
+      "dateKey": "examDate",
+      "fields": [
+        {
+          "id": "examType",
+          "name": "Imaging study type",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "findings",
+          "name": "Radiology report",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "notes",
+          "name": "Clinical note",
+          "type": "text",
+          "concept": []
+        }
+      ],
+      "excluded": [
+        {
+          "id": "examDate",
+          "reason": "carries the encounter datetime"
+        },
+        {
+          "id": "dateCreated",
+          "reason": "record timestamp - Obs.dateCreated already carries it"
+        }
+      ]
+    },
+    {
+      "id": "patientview.labResult",
+      "ficheSection": "7",
+      "sourceGetter": "getLabResults",
+      "target": "DiagnosticReport + Observation",
+      "dateKey": "sampleDate",
+      "fields": [
+        {
+          "id": "completeBloodCount",
+          "name": "Complete blood count (narrative)",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "crp",
+          "name": "C reactive protein",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "glycemia",
+          "name": "Serum glucose",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "creatinine",
+          "name": "Serum creatinine",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "ionogram",
+          "name": "Serum electrolytes (narrative)",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "coagulation",
+          "name": "Coagulation studies (narrative)",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "bloodGroup",
+          "name": "ABO and Rh group",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "notes",
+          "name": "Clinical note",
+          "type": "text",
+          "concept": []
+        }
+      ],
+      "excluded": [
+        {
+          "id": "sampleDate",
+          "reason": "carries the encounter datetime"
+        },
+        {
+          "id": "dateCreated",
+          "reason": "record timestamp - Obs.dateCreated already carries it"
+        }
+      ]
+    },
+    {
+      "id": "patientview.diagnosis",
+      "ficheSection": "8",
+      "sourceGetter": "getNeurosurgicalDiagnoses",
+      "target": "Condition",
+      "dateKey": "dateCreated",
+      "fields": [
+        {
+          "id": "diagnosis",
+          "name": "Neurosurgical diagnosis",
+          "type": "condition",
+          "concept": []
+        },
+        {
+          "id": "lesionLocation",
+          "name": "Anatomical site of lesion",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "laterality",
+          "name": "Laterality",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "size",
+          "name": "Lesion size",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "lesionCount",
+          "name": "Number of lesions",
+          "type": "numeric",
+          "concept": []
+        },
+        {
+          "id": "whoDiagnosis",
+          "name": "WHO classification",
+          "type": "text",
+          "concept": []
+        }
+      ],
+      "excluded": [
+        {
+          "id": "dateCreated",
+          "reason": "carries the Condition onset date"
+        }
+      ]
+    },
+    {
+      "id": "patientview.medicalTreatment",
+      "ficheSection": "9",
+      "sourceGetter": "getMedicalTreatments",
+      "target": "Observation",
+      "dateKey": "dateCreated",
+      "fields": [
+        {
+          "id": "corticosteroids",
+          "name": "Corticosteroid therapy",
+          "type": "boolean",
+          "concept": []
+        },
+        {
+          "id": "antiepileptics",
+          "name": "Antiepileptic drug therapy",
+          "type": "boolean",
+          "concept": []
+        },
+        {
+          "id": "antibiotics",
+          "name": "Antibiotic therapy",
+          "type": "boolean",
+          "concept": []
+        },
+        {
+          "id": "anticoagulants",
+          "name": "Anticoagulant therapy",
+          "type": "boolean",
+          "concept": []
+        },
+        {
+          "id": "analgesics",
+          "name": "Analgesic therapy",
+          "type": "boolean",
+          "concept": []
+        },
+        {
+          "id": "otherTreatments",
+          "name": "Other treatment",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "notes",
+          "name": "Clinical note",
+          "type": "text",
+          "concept": []
+        }
+      ],
+      "excluded": [
+        {
+          "id": "dateCreated",
+          "reason": "carries the encounter datetime"
+        }
+      ]
+    },
+    {
+      "id": "patientview.surgicalTreatment",
+      "ficheSection": "9",
+      "sourceGetter": "getSurgicalTreatments",
+      "target": "Encounter + Observation",
+      "dateKey": "surgeryDate",
+      "fields": [
+        {
+          "id": "procedurePerformed",
+          "name": "Surgical procedure performed",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "resectionType",
+          "name": "Extent of resection",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "durationMinutes",
+          "name": "Duration of surgery (minutes)",
+          "type": "numeric",
+          "concept": []
+        },
+        {
+          "id": "surgeon",
+          "name": "Surgeon",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "intraoperativeComplications",
+          "name": "Intraoperative complication",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "drainPlaced",
+          "name": "Surgical drain placed",
+          "type": "boolean",
+          "concept": []
+        },
+        {
+          "id": "catheterPlaced",
+          "name": "Urinary catheter placed",
+          "type": "boolean",
+          "concept": []
+        },
+        {
+          "id": "notes",
+          "name": "Clinical note",
+          "type": "text",
+          "concept": []
+        }
+      ],
+      "excluded": [
+        {
+          "id": "surgeryDate",
+          "reason": "carries the encounter datetime"
+        },
+        {
+          "id": "dateCreated",
+          "reason": "record timestamp - Obs.dateCreated already carries it"
+        }
+      ]
+    },
+    {
+      "id": "patientview.pathology",
+      "ficheSection": "10",
+      "sourceGetter": "getPathologyReports",
+      "target": "DiagnosticReport",
+      "dateKey": "dateCreated",
+      "fields": [
+        {
+          "id": "finalDiagnosis",
+          "name": "Final pathological diagnosis",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "whoGrade",
+          "name": "WHO tumour grade",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "studyFindings",
+          "name": "Histopathology findings",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "immunohistochemistry",
+          "name": "Immunohistochemistry findings",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "molecularMarkers",
+          "name": "Molecular marker findings",
+          "type": "text",
+          "concept": []
+        }
+      ],
+      "excluded": [
+        {
+          "id": "dateCreated",
+          "reason": "carries the encounter datetime"
+        }
+      ]
+    },
+    {
+      "id": "patientview.postopEvolution",
+      "ficheSection": "11",
+      "sourceGetter": "getPostopEvolutions",
+      "target": "Observation",
+      "dateKey": "dateCreated",
+      "fields": [
+        {
+          "id": "postopGcs",
+          "name": "Glasgow coma score total",
+          "type": "numeric",
+          "concept": [
+            {
+              "source": "LOINC",
+              "code": "9269-2"
+            }
+          ]
+        },
+        {
+          "id": "postopKarnofsky",
+          "name": "Karnofsky Performance Status score",
+          "type": "numeric",
+          "concept": [
+            {
+              "source": "LOINC",
+              "code": "89243-0"
+            }
+          ]
+        },
+        {
+          "id": "neurologicalStatus",
+          "name": "Neurological status",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "infection",
+          "name": "Postoperative infection",
+          "type": "boolean",
+          "concept": []
+        },
+        {
+          "id": "hemorrhage",
+          "name": "Postoperative haemorrhage",
+          "type": "boolean",
+          "concept": []
+        },
+        {
+          "id": "hydrocephalus",
+          "name": "Hydrocephalus",
+          "type": "boolean",
+          "concept": []
+        },
+        {
+          "id": "csfLeak",
+          "name": "Cerebrospinal fluid leak",
+          "type": "boolean",
+          "concept": []
+        },
+        {
+          "id": "seizures",
+          "name": "Seizures",
+          "type": "boolean",
+          "concept": []
+        },
+        {
+          "id": "deceased",
+          "name": "Patient died",
+          "type": "boolean",
+          "concept": []
+        },
+        {
+          "id": "deathDate",
+          "name": "Date of death",
+          "type": "date",
+          "concept": []
+        },
+        {
+          "id": "notes",
+          "name": "Clinical note",
+          "type": "text",
+          "concept": []
+        }
+      ],
+      "excluded": [
+        {
+          "id": "dateCreated",
+          "reason": "carries the encounter datetime"
+        }
+      ]
+    },
+    {
+      "id": "patientview.sequelae",
+      "ficheSection": "12",
+      "sourceGetter": "getSequelae",
+      "target": "Observation",
+      "dateKey": "dateCreated",
+      "fields": [
+        {
+          "id": "motorDeficit",
+          "name": "Motor deficit",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "sensoryDeficit",
+          "name": "Sensory deficit",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "aphasia",
+          "name": "Aphasia",
+          "type": "boolean",
+          "concept": []
+        },
+        {
+          "id": "cognitiveDisorders",
+          "name": "Cognitive impairment",
+          "type": "boolean",
+          "concept": []
+        },
+        {
+          "id": "secondaryEpilepsy",
+          "name": "Secondary epilepsy",
+          "type": "boolean",
+          "concept": []
+        },
+        {
+          "id": "residualDisability",
+          "name": "Residual disability",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "notes",
+          "name": "Clinical note",
+          "type": "text",
+          "concept": []
+        }
+      ],
+      "excluded": [
+        {
+          "id": "dateCreated",
+          "reason": "carries the encounter datetime"
+        }
+      ]
+    },
+    {
+      "id": "patientview.discharge",
+      "ficheSection": "13",
+      "sourceGetter": "getDischarges",
+      "target": "Encounter",
+      "dateKey": "dischargeDate",
+      "fields": [
+        {
+          "id": "dischargeMode",
+          "name": "Discharge disposition",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "notes",
+          "name": "Clinical note",
+          "type": "text",
+          "concept": []
+        }
+      ],
+      "excluded": [
+        {
+          "id": "dischargeDate",
+          "reason": "carries the encounter datetime"
+        },
+        {
+          "id": "dateCreated",
+          "reason": "record timestamp - Obs.dateCreated already carries it"
+        }
+      ]
+    },
+    {
+      "id": "patientview.followUp",
+      "ficheSection": "14",
+      "sourceGetter": "getFollowUps",
+      "target": "Encounter + Observation",
+      "dateKey": "consultationDate",
+      "fields": [
+        {
+          "id": "clinicalExam",
+          "name": "General examination findings",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "neurologicalExam",
+          "name": "Neurological examination findings",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "controlImaging",
+          "name": "Follow-up imaging findings",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "recurrence",
+          "name": "Disease recurrence",
+          "type": "boolean",
+          "concept": []
+        },
+        {
+          "id": "currentTreatment",
+          "name": "Current treatment",
+          "type": "text",
+          "concept": []
+        },
+        {
+          "id": "nextConsultationDate",
+          "name": "Date of next appointment",
+          "type": "date",
+          "concept": []
+        },
+        {
+          "id": "notes",
+          "name": "Clinical note",
+          "type": "text",
+          "concept": []
+        }
+      ],
+      "excluded": [
+        {
+          "id": "consultationDate",
+          "reason": "carries the encounter datetime"
+        },
+        {
+          "id": "dateCreated",
+          "reason": "record timestamp - Obs.dateCreated already carries it"
+        }
+      ]
+    }
+  ]
+}

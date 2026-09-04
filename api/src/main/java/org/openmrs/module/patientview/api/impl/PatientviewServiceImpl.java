@@ -6,6 +6,7 @@ import org.openmrs.Patient;
 import org.openmrs.api.impl.BaseOpenmrsService;
 import org.openmrs.module.patientview.api.PatientviewService;
 import org.openmrs.module.patientview.api.dao.PatientviewDao;
+import org.openmrs.module.patientview.api.fhir.ObsProjector;
 import org.openmrs.module.patientview.api.imaging.DicomStudyBridge;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,12 +22,22 @@ public class PatientviewServiceImpl extends BaseOpenmrsService implements Patien
     protected final Log log = LogFactory.getLog(this.getClass());
     
     private PatientviewDao dao;
+
+    private ObsProjector projector;
     
     /**
      * Setter for the DAO - Spring will inject this
      */
     public void setDao(PatientviewDao dao) {
         this.dao = dao;
+    }
+
+    /**
+     * Setter for the core-model projector - Spring will inject this. Left optional: when it is
+     * absent (as in the plain Mockito unit tests) every save behaves exactly as before.
+     */
+    public void setProjector(ObsProjector projector) {
+        this.projector = projector;
     }
     
     /**
@@ -67,6 +78,7 @@ public class PatientviewServiceImpl extends BaseOpenmrsService implements Patien
         }
         if (dao != null) {
             dao.saveNeuroAssessment(patient, assessmentData);
+            projectQuietly(patient, "patientview.neuroAssessment");
         }
     }
     
@@ -201,6 +213,7 @@ public class PatientviewServiceImpl extends BaseOpenmrsService implements Patien
         }
         if (dao != null) {
             dao.saveSurgicalHistory(patient, data);
+            projectQuietly(patient, "patientview.surgicalHistory");
         }
     }
 
@@ -221,6 +234,7 @@ public class PatientviewServiceImpl extends BaseOpenmrsService implements Patien
         }
         if (dao != null) {
             dao.saveMedicalHistory(patient, data);
+            projectQuietly(patient, "patientview.medicalHistory");
         }
     }
 
@@ -241,6 +255,7 @@ public class PatientviewServiceImpl extends BaseOpenmrsService implements Patien
         }
         if (dao != null) {
             dao.saveAdmissionContext(patient, data);
+            projectQuietly(patient, "patientview.admissionContext");
         }
     }
 
@@ -261,6 +276,7 @@ public class PatientviewServiceImpl extends BaseOpenmrsService implements Patien
         }
         if (dao != null) {
             dao.saveVitalSigns(patient, data);
+            projectQuietly(patient, "patientview.vitalSigns");
         }
     }
 
@@ -281,6 +297,7 @@ public class PatientviewServiceImpl extends BaseOpenmrsService implements Patien
         }
         if (dao != null) {
             dao.saveNeuroExamDetail(patient, data);
+            projectQuietly(patient, "patientview.neuroExam");
         }
     }
 
@@ -301,6 +318,7 @@ public class PatientviewServiceImpl extends BaseOpenmrsService implements Patien
         }
         if (dao != null) {
             dao.saveNeurosurgicalDiagnosis(patient, data);
+            projectQuietly(patient, "patientview.diagnosis");
         }
     }
 
@@ -321,6 +339,7 @@ public class PatientviewServiceImpl extends BaseOpenmrsService implements Patien
         }
         if (dao != null) {
             dao.savePathologyReport(patient, data);
+            projectQuietly(patient, "patientview.pathology");
         }
     }
 
@@ -341,6 +360,7 @@ public class PatientviewServiceImpl extends BaseOpenmrsService implements Patien
         }
         if (dao != null) {
             dao.saveMedicalTreatment(patient, data);
+            projectQuietly(patient, "patientview.medicalTreatment");
         }
     }
 
@@ -361,6 +381,7 @@ public class PatientviewServiceImpl extends BaseOpenmrsService implements Patien
         }
         if (dao != null) {
             dao.saveSurgicalTreatment(patient, data);
+            projectQuietly(patient, "patientview.surgicalTreatment");
         }
     }
 
@@ -381,6 +402,7 @@ public class PatientviewServiceImpl extends BaseOpenmrsService implements Patien
         }
         if (dao != null) {
             dao.savePostopEvolution(patient, data);
+            projectQuietly(patient, "patientview.postopEvolution");
         }
     }
 
@@ -401,6 +423,7 @@ public class PatientviewServiceImpl extends BaseOpenmrsService implements Patien
         }
         if (dao != null) {
             dao.saveSequelae(patient, data);
+            projectQuietly(patient, "patientview.sequelae");
         }
     }
 
@@ -421,6 +444,7 @@ public class PatientviewServiceImpl extends BaseOpenmrsService implements Patien
         }
         if (dao != null) {
             dao.saveLabResult(patient, data);
+            projectQuietly(patient, "patientview.labResult");
         }
     }
 
@@ -441,6 +465,7 @@ public class PatientviewServiceImpl extends BaseOpenmrsService implements Patien
         }
         if (dao != null) {
             dao.saveDischarge(patient, data);
+            projectQuietly(patient, "patientview.discharge");
         }
     }
 
@@ -461,6 +486,7 @@ public class PatientviewServiceImpl extends BaseOpenmrsService implements Patien
         }
         if (dao != null) {
             dao.saveFollowUp(patient, data);
+            projectQuietly(patient, "patientview.followUp");
         }
     }
 
@@ -481,6 +507,7 @@ public class PatientviewServiceImpl extends BaseOpenmrsService implements Patien
         }
         if (dao != null) {
             dao.saveImagingNote(patient, data);
+            projectQuietly(patient, "patientview.imagingNote");
         }
     }
 
@@ -497,5 +524,66 @@ public class PatientviewServiceImpl extends BaseOpenmrsService implements Patien
     @Transactional(readOnly = true)
     public boolean isImagingModuleAvailable() {
         return DicomStudyBridge.isAvailable();
+    }
+    // ------------------------------------------------------------------ core-model projection
+
+    @Override
+    @Transactional
+    public Map<String, Object> projectToClinicalModel(Patient patient) {
+        if (patient == null || projector == null) {
+            return new HashMap<>();
+        }
+        return projector.projectPatient(patient);
+    }
+
+    @Override
+    @Transactional
+    public Map<String, Object> projectAllPatients() {
+        Map<String, Object> summary = new LinkedHashMap<>();
+        if (projector == null || dao == null) {
+            return summary;
+        }
+        List<Patient> patients = dao.getPatientsWithNeurosurgeryRecords();
+        summary.put("patientsProcessed", patients.size());
+        for (Patient patient : patients) {
+            // REQUIRES_NEW inside the projector keeps one patient's failure from abandoning
+            // the rest of the backfill.
+            try {
+                projector.projectPatient(patient);
+            } catch (Exception e) {
+                log.warn("Backfill failed for patient " + patient.getPatientId(), e);
+                summary.put("failures", asInt(summary.get("failures")) + 1);
+            }
+        }
+        return summary;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map<String, Object> getFhirCoverageReport() {
+        if (projector == null) {
+            return new HashMap<>();
+        }
+        return projector.getCoverageReport();
+    }
+
+    private static int asInt(Object value) {
+        return value instanceof Integer ? (Integer) value : 0;
+    }
+
+    /**
+     * Exports one set for one patient, swallowing any failure. Losing a clinical record because
+     * its export failed would be far worse than not exporting it, so this can never propagate
+     * (see ObsProjector's class doc; the projector also runs in its own transaction).
+     */
+    private void projectQuietly(Patient patient, String setId) {
+        if (projector == null) {
+            return;
+        }
+        try {
+            projector.projectSet(patient, setId);
+        } catch (Exception e) {
+            log.warn("Projection of " + setId + " failed; the clinical record was still saved", e);
+        }
     }
 }

@@ -11,10 +11,39 @@
     <property name="sessionFactory" ref="sessionFactory"/>
   </bean>
 
+  <!-- Core-model projector: writes patientview rows as Encounter/Obs/Condition so the FHIR2
+       module can serve them. Proxied for transactions because the two entry points need
+       different propagation, and the difference is load-bearing:
+         projectSet     - REQUIRED, so that projecting straight after a save can see the row
+                          that save just wrote. A new transaction would not see it, and every
+                          projection would silently lag one save behind.
+         projectPatient - REQUIRES_NEW, so one patient's failure cannot abandon the rest of a
+                          server-wide backfill. It only reads already-committed rows.
+       proxyTargetClass is explicit because ObsProjector implements no interface. -->
+  <bean id="patientview.ObsProjectorTarget"
+        class="org.openmrs.module.patientview.api.fhir.ObsProjector">
+    <property name="dao" ref="patientview.PatientviewDao"/>
+  </bean>
+
+  <bean id="patientview.ObsProjector"
+        class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+    <property name="transactionManager" ref="transactionManager"/>
+    <property name="target" ref="patientview.ObsProjectorTarget"/>
+    <property name="proxyTargetClass" value="true"/>
+    <property name="transactionAttributes">
+      <props>
+        <prop key="projectPatient">PROPAGATION_REQUIRES_NEW</prop>
+        <prop key="projectSet">PROPAGATION_REQUIRED</prop>
+        <prop key="getCoverageReport">PROPAGATION_REQUIRED,readOnly</prop>
+      </props>
+    </property>
+  </bean>
+
   <!-- Service target (plain implementation) -->
   <bean id="patientview.PatientviewServiceTarget"
         class="org.openmrs.module.patientview.api.impl.PatientviewServiceImpl">
     <property name="dao" ref="patientview.PatientviewDao"/>
+    <property name="projector" ref="patientview.ObsProjector"/>
   </bean>
 
   <!-- Transactional proxy exposed to Context.getService(...) -->

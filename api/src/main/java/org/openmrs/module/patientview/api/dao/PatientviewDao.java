@@ -1,6 +1,7 @@
 package org.openmrs.module.patientview.api.dao;
 
 import org.openmrs.Patient;
+import org.openmrs.module.patientview.api.model.FhirProjection;
 import java.util.List;
 import java.util.Map;
 
@@ -45,6 +46,15 @@ public interface PatientviewDao {
      * @return the medical history as a map, or an empty map if none recorded yet
      */
     Map<String, Object> getMedicalHistory(Patient patient);
+
+    /**
+     * Every recorded version of the patient's medical history, newest first. The table is
+     * append-only, so this is the full history rather than only the current state - which is what
+     * the core-model projection needs, since it exports each version as its own dated encounter.
+     * @param patient the patient
+     * @return every version, newest first; empty when none is recorded
+     */
+    List<Map<String, Object>> getMedicalHistoryVersions(Patient patient);
 
     /**
      * Create or update the medical history for a patient (one record per patient)
@@ -236,4 +246,25 @@ public interface PatientviewDao {
      * @param data the record's fields
      */
     void saveImagingNote(Patient patient, Map<String, Object> data);
+    /**
+     * Source-row uuids for this patient and manifest set that have already been projected into
+     * the core clinical model. Drives the projector's idempotency.
+     * @param patient the patient
+     * @param sourceSet manifest set id, e.g. "patientview.vitalSigns"
+     * @return the uuids already projected
+     */
+    List<String> getProjectedSourceUuids(Patient patient, String sourceSet);
+
+    /**
+     * Record that one source row has been projected. Append-only, like every other write here.
+     * @param projection the ledger entry
+     */
+    void saveFhirProjection(FhirProjection projection);
+
+    /**
+     * Every patient holding at least one projectable patientview record, for the server-wide
+     * backfill of rows created before the projection existed.
+     * @return the patients, without duplicates
+     */
+    List<Patient> getPatientsWithNeurosurgeryRecords();
 }

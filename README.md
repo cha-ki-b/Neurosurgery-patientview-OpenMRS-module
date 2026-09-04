@@ -8,7 +8,7 @@ sequelae, discharge and follow-up - with full CRUD backed by MySQL and a two-tie
 privilege model so nurses and surgeons/radiologists see different levels of access.
 
 **Target platform:** OpenMRS Platform 2.5.9 / Reference Application 2.12.2
-**Module ID:** `patientview` · **Package:** `org.openmrs.module.patientview` · **Version:** `1.3.0`
+**Module ID:** `patientview` · **Package:** `org.openmrs.module.patientview` · **Version:** `1.4.1`
 
 Thanks to `hanyG175` and `bouzenaali` for starting the job: [Repo](https://github.com/hanyG175/openmrs-patientview-module)
 
@@ -49,6 +49,9 @@ Build produces `patientview1.3.0.omod` (see `omod/pom.xml`'s `finalName`:
 | Biologie | §7 | done |
 | Sortie & suivi | §13-14 | done |
 | Imagerie | §6 - local comptes rendus + DICOM studies read from the `imaging` module | done |
+
+Every tab's data is additionally projected into the core OpenMRS clinical model so the
+FHIR2 module can serve it - see §15 for what that covers today.
 
 Admin info already covered by OpenMRS core (name, DOB, sex, phone, etc.) is intentionally
 **not** duplicated anywhere in this module.
@@ -264,6 +267,8 @@ Test layers:
   in-memory OpenMRS Spring/Hibernate context. The only test that exercises the full startup
   wiring (§6), so it's the one that would catch Spring/Liquibase misconfiguration before it
   reaches a real deployment.
+- **`FhirMappingManifestTest`** — checks the FHIR mapping manifest against the DAO in both
+  directions and against the projector's wiring; see §15.
 - **`ModuleWiringTest`** (in `omod`) — fast, no-OpenMRS-context static checks on the
   packaging files themselves (`config.xml`, `moduleApplicationContext.xml`,
   `liquibase.xml`, every `.gsp`, `patientview_extension.json`), added as a regression guard
@@ -280,6 +285,22 @@ credentials moved from hardcoded YAML into a `.env` file. These files update the
 ## 11. Known limitations / roadmap
 
 - All ten tabs are built (§2); the Fiche de Neurochirurgie is fully covered.
+- **105 of the 120 concept-backed fields have no concept yet** (§15). The export machinery is
+  complete and tested, but only §4 Constantes, §5 Scores, the two §11 scores and §8
+  Diagnostic actually leave the module today. This is dictionary work needing a clinician and a
+  CIEL curator, not a developer - and `tools/ciel_match.py` turns it from 105 manual searches
+  into reviewing a pre-filled table. OCL disabled anonymous API access, so the codes have to be
+  resolved against the dictionary as loaded on your own server; that script does exactly that
+  without needing a Python database driver.
+- The lab panels (NFS, ionogramme, coagulation) and CRP/glycémie/créatinine are stored as
+  text by this module, so mapping them to CIEL's *numeric* concepts will be reported as a
+  datatype mismatch rather than silently coerced. Either map them to text-datatype concepts
+  or split the values out first - a deliberate decision, not an oversight.
+- FHIR2 does not serve `Procedure`, so the two surgical sets export as observations. Because
+  the mapping lives in a manifest rather than in Java, retargeting them if FHIR2 adds it
+  later is a data edit.
+- FHIR2 4.x requires JDK 11; this module compiles at source level 1.8. Moving to 4.x is a
+  Java migration for patientview, independent of anything in §15.
 - The Imagerie tab's DICOM study list needs the separate `imaging` module installed and
   started. Without it the tab still works, showing this module's own comptes rendus and a
   message explaining the PACS link is unavailable - but there is no fallback path that
@@ -304,6 +325,16 @@ credentials moved from hardcoded YAML into a `.env` file. These files update the
 
 ## 12. Version history
 
+- **1.4.1** — Medical history now exports every recorded version rather than only the
+  current one, so each becomes its own dated encounter. Adds `tools/ciel_match.py`, which
+  turns the concept backlog from 105 manual dictionary searches into a review pass, and
+  relaxes the curation assertions from equalities to floors so a curation batch no longer
+  fails the build (§15).
+- **1.4.0** — Exposes the whole record through the FHIR2 API, without depending on FHIR2:
+  an append-only projection of every set into core `Encounter`/`Obs`/`Condition`, driven by a
+  declarative CIEL mapping manifest, with an idempotency ledger, a per-patient and server-wide
+  backfill, a coverage report, and build-time guards against manifest/DAO/projector drift. 15
+  of 121 fields ship with verified concepts; the rest is dictionary curation (§15).
 - **1.3.0** — Phase 3, completing the Fiche: Prise en charge (§9), Évolution
   postopératoire & Séquelles (§11-12), Biologie (§7), Sortie & Suivi (§13-14) and
   Imagerie (§6) - eight new append-only entities, their REST/page controllers and tabs, and
@@ -449,3 +480,149 @@ the real not-installed path rather than a mock of it.
 `/openmrs/admin/modules/module.list`; `imaging`'s own Orthanc configuration points at a
 reachable Orthanc; and its study sync has run (patientview only reads what `imaging` has
 already synced - it never triggers a fetch itself).
+
+## 15. Exposing the record through FHIR (1.4.0)
+
+The FHIR2 module serves FHIR resources out of the **core** OpenMRS schema: its data-access
+layer queries `obs`, `encounter`, `conditions` and friends directly, and it documents no way
+for another module to register a resource provider or contribute rows from its own tables.
+patientview's sixteen `patientview_*` tables were therefore invisible to it - which is the
+actual reason nothing was exported before 1.4.0, and no amount of adapter code in either
+module would have changed it.
+
+So this release does not integrate with FHIR2 at all. It makes the data reachable through the
+core clinical model, and lets FHIR2 do its own job:
+
+```
+saveXxx()  ->  patientview_* row (unchanged, still the system of record for the UI)
+           ->  ObsProjector      ->  Encounter + Obs        ->  FHIR2 serves Observation
+                                 ->  Condition (section 8)  ->  FHIR2 serves Condition
+```
+
+**`ObsProjector` contains no reference to FHIR2, deliberately.** It calls only
+`ConceptService`, `EncounterService`, `ConditionService` and the encounter's obs cascade - core
+platform APIs, stable across the whole 2.x line. That indirection is the forward-compatibility
+story: across FHIR2's major versions the one thing that has broken downstream modules is its
+**DAO layer** (2.x → 3.x replaced the Hibernate `Criteria` object with
+`OpenmrsFhirCriteriaContext`, and the core team's guidance is that modules which "leveraged the
+FHIR2 DAO API classes to implement their own DAOs will be impacted"; 3.x is otherwise
+"basically backwards compatible"). Nothing here touches that layer, so an upgrade to FHIR2 4.x
+is a no-op for this module. **Do not add an fhir2 dependency to either `pom.xml`** - it would
+throw that property away, and `FhirMappingManifestTest` is not a substitute for the discipline.
+
+### Idempotent because the module is append-only
+
+Every entity here is insert-only, so *"project the rows that are not in the ledger yet"* is a
+complete description of the work. That single property buys a lot:
+
+- the live path (after a save) and the backfill of historical rows are the **same operation**;
+- re-running either is safe, so the "Export FHIR" button and the server-wide backfill cannot
+  double-write;
+- it is self-healing - a row whose export was skipped for want of a concept is retried the next
+  time anything for that patient is saved, or on the next backfill;
+- ordering is irrelevant, so a back-dated record is picked up as reliably as the newest one.
+
+The ledger is `patientview_fhir_projection` (source set, source row uuid, encounter uuid), with
+a unique index on `(source_set, source_uuid)` so the guarantee is enforced by the database and
+not only by the code that checks before inserting. Every DAO getter now also returns the row's
+`uuid`, which is what the ledger keys on.
+
+### Transaction propagation, which is load-bearing
+
+`projectSet` runs `REQUIRED` - in the **caller's** transaction - because it runs straight after
+a save and must see the row that save just wrote. An earlier draft of this used `REQUIRES_NEW`
+for isolation; that suspends the caller's transaction, leaves the new row invisible, and
+silently pushes every projection one save behind forever. `projectPatient` *does* take
+`REQUIRES_NEW`, because it only reads already-committed rows and the server-wide backfill needs
+one patient's failure not to abandon the sweep. See `moduleApplicationContext.xml`.
+
+A dictionary gap can never fail a clinical save: every reason a field might not be exportable -
+no concept curated, a declared concept that does not resolve here, a datatype disagreement, a
+coded boolean with no `concept.true` configured - is checked *before* any obs is built, and
+reported instead of thrown.
+
+### Concepts: CIEL, by mapping, never by id
+
+`api/src/main/resources/patientview-fhir-mapping.json` declares all 16 sets and 121 projectable
+fields. Concepts are resolved at runtime with
+`ConceptService.getConceptByMapping(code, source)` - **never by numeric `concept_id`**, because
+those are install-specific: an id that is correct here would point at a different concept, or
+none, on another server.
+
+**15 of the 121 fields ship with a concept.** Those were each verified against a public
+source - the CIEL vitals codes against `openmrs-module-referenceapplication`'s own
+`htmlforms/vitals.xml`, and the Glasgow/Karnofsky codes against loinc.org:
+
+| Fiche | Fields | Codes |
+| --- | --- | --- |
+| §4 Constantes | temperature, TA systolique/diastolique, pouls, FR, SpO2, poids, taille | `CIEL:5088 5085 5086 5087 5242 5092 5089 5090` |
+| §5 Scores | Glasgow E / V / M / total, Karnofsky | `LOINC:9267-6 9270-0 9268-4 9269-2 89243-0` |
+| §11 Évolution | Glasgow et Karnofsky postopératoires | the **same** codes as §5 |
+
+That last row is deliberate: in FHIR a post-operative score is the same `Observation.code` at a
+later `effectiveDateTime`, not a different code.
+
+`bmi` is deliberately **not** projected - the reference application's vitals form stores no
+concept for it either, because it is derived from height and weight and FHIR consumers
+recompute it.
+
+Medical history exports **every** recorded version, not just the current one: the table is
+append-only, so each version becomes its own dated encounter, which is what makes a
+"comorbidities as of this admission" query answerable. `getMedicalHistoryVersions` returns them
+all and `getMedicalHistory` delegates to it for the first, so there is still one map-builder.
+
+The remaining **105 fields await curation**, which is a dictionary task rather than a coding
+one: search your loaded CIEL for the clinical label in the field's `name`, then add
+`{"source": "CIEL", "code": "<id>"}` to its `concept` array. The file is packaged in the omod,
+so shipping new codes means rebuilding.
+
+Do not do that by hand. **`tools/ciel_match.py`** exists to make curation routine: `sql` mode
+emits one query that searches your dictionary for every uncurated label at once - matching on
+any synonym, since that is where a clinician's wording usually lands, while reporting the fully
+specified name so the reviewer sees what the concept really is - and `apply` mode reads the
+approved rows back into the manifest. It needs no Python database driver: you run the SQL
+through `docker exec`, so it works against a running container or a restored dump. It refuses
+to apply if more than one candidate is still present for a field, and warns when a candidate's
+datatype cannot hold the field's value, which catches a mismatch during review rather than
+after a rebuild. A name match is a suggestion, not a decision - a clinician makes the review
+pass.
+
+Ask the running server what is left:
+
+```
+GET  /openmrs/ws/rest/../module/patientview/fhirProjection.form   # coverage report
+POST /module/patientview/fhirProjection.form?patientId=123        # backfill one patient
+POST /module/patientview/fhirProjection.form?allPatients=true     # backfill everything
+```
+
+Section 8 is the exception that needs no dictionary at all: OpenMRS `Condition` accepts free
+text through `CodedOrFreeText.setNonCoded`, and FHIR2 renders that as `Condition.code.text`. So
+the neurosurgical diagnosis exports correctly today, with the lesion descriptors folded into
+`Condition.additionalDetail`.
+
+### What is exportable today, without curation
+
+Four of the sixteen sets: §4 Constantes, §5 Scores, §11 (the two scores only) and §8 Diagnostic.
+Everything else is wired end to end and exports nothing until its concepts are filled in - which
+the coverage report states plainly rather than failing quietly.
+
+### The guard against drift
+
+`FhirMappingManifestTest` (in `api`, no OpenMRS context) checks the manifest against the code
+in both directions, because a string-keyed manifest drifts silently:
+
+- every declared field is a key its named DAO getter really produces, **and** every key that
+  getter produces is either mapped or explicitly excluded with a reason - the second direction
+  is what stops a newly added clinical field from never being exported;
+- every set has a `case` in `ObsProjector.fetchRows`, or it would read no rows at all;
+- every getter exposes the `uuid` the ledger keys on;
+- concepts are declared with a mapping source, never a bare local id;
+- the field count (120) is asserted exactly, since it can only change with a schema change;
+  the curation counts are asserted as **floors** (≥ 15 coded, ≥ 4 sets exporting) rather than
+  equalities, because curation is expected routine work and an exact assertion would fail the
+  build on every batch and train people to edit the number without reading it. A floor still
+  catches the regression that matters - concepts disappearing from the manifest. `ciel_match.py`
+  prints the new figure to raise it to.
+
+`QuickDeploymentTest` covers the other half: it boots a real Spring/Hibernate context, so the
+new mapping file, the projector bean and its transaction proxy are exercised rather than assumed.

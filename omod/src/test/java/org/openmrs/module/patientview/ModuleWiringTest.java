@@ -85,7 +85,7 @@ public class ModuleWiringTest {
         // Checked against the mapping files that actually exist, rather than a hand-written list:
         // an entity whose .hbm.xml is never registered here compiles, packages and deploys fine,
         // then fails at the first HQL query against it with "not mapped" - long after the build
-        // went green. There are sixteen mapped classes now, and a list maintained by hand is the
+        // went green. There are seventeen mapped classes now, and a list maintained by hand is the
         // wrong tool: this way a mapping added later is covered without anyone remembering to
         // come back and extend the test.
         File modelDir = new File("../api/src/main/resources/org/openmrs/module/patientview/api/model");
@@ -98,7 +98,7 @@ public class ModuleWiringTest {
         });
         assertNotNull("mapping directory should be readable", mappings);
         assertTrue("expected to find the module's .hbm.xml files, found " + mappings.length,
-                mappings.length >= 16);
+                mappings.length >= 17);
         for (File mapping : mappings) {
             String path = "org/openmrs/module/patientview/api/model/" + mapping.getName();
             assertTrue("config.xml <mappingFiles> does not list " + mapping.getName()

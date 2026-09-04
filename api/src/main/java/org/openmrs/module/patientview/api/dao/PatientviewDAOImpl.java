@@ -6,6 +6,7 @@ import org.openmrs.Patient;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.patientview.api.model.AdmissionContext;
 import org.openmrs.module.patientview.api.model.Discharge;
+import org.openmrs.module.patientview.api.model.FhirProjection;
 import org.openmrs.module.patientview.api.model.FollowUp;
 import org.openmrs.module.patientview.api.model.ImagingNote;
 import org.openmrs.module.patientview.api.model.LabResult;
@@ -25,8 +26,10 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 public class PatientviewDAOImpl implements PatientviewDao {
@@ -49,6 +52,7 @@ public class PatientviewDAOImpl implements PatientviewDao {
         List<Map<String, Object>> result = new ArrayList<>();
         for (NeuroAssessment a : assessments) {
             Map<String, Object> map = new HashMap<>();
+            map.put("uuid", a.getUuid());
             map.put("date", a.getAssessmentDate());
             map.put("gcs", a.getGcsTotal());
             map.put("eyeResponse", a.getEyeResponse());
@@ -94,6 +98,7 @@ public class PatientviewDAOImpl implements PatientviewDao {
         List<Map<String, Object>> result = new ArrayList<>();
         for (SurgicalHistory s : history) {
             Map<String, Object> map = new HashMap<>();
+            map.put("uuid", s.getUuid());
             map.put("procedure", s.getProcedureName());
             map.put("date", s.getDatePerformed());
             map.put("surgeon", s.getSurgeon());
@@ -124,29 +129,37 @@ public class PatientviewDAOImpl implements PatientviewDao {
 
     @Override
     public Map<String, Object> getMedicalHistory(Patient patient) {
+        // "Current" medical history is simply the newest version - the table is append-only like
+        // every other one here (see saveMedicalHistory). Delegating keeps one map-builder.
+        List<Map<String, Object>> versions = getMedicalHistoryVersions(patient);
+        return versions.isEmpty() ? new HashMap<>() : versions.get(0);
+    }
+
+    @Override
+    public List<Map<String, Object>> getMedicalHistoryVersions(Patient patient) {
         List<MedicalHistory> results = sessionFactory.getCurrentSession()
                 .createQuery("from MedicalHistory m where m.patient = :patient order by m.dateCreated desc",
                         MedicalHistory.class)
                 .setParameter("patient", patient)
-                .setMaxResults(1)
                 .list();
 
-        Map<String, Object> map = new HashMap<>();
-        if (results.isEmpty()) {
-            return map;
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (MedicalHistory history : results) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("uuid", history.getUuid());
+            map.put("diabetes", history.isDiabetes());
+            map.put("hypertension", history.isHypertension());
+            map.put("epilepsy", history.isEpilepsy());
+            map.put("stroke", history.isStroke());
+            map.put("heartDisease", history.isHeartDisease());
+            map.put("renalFailure", history.isRenalFailure());
+            map.put("allergies", history.getAllergies());
+            map.put("chronicTreatment", history.getChronicTreatment());
+            map.put("otherHistory", history.getOtherHistory());
+            map.put("dateChanged", history.getDateCreated());
+            result.add(map);
         }
-        MedicalHistory history = results.get(0);
-        map.put("diabetes", history.isDiabetes());
-        map.put("hypertension", history.isHypertension());
-        map.put("epilepsy", history.isEpilepsy());
-        map.put("stroke", history.isStroke());
-        map.put("heartDisease", history.isHeartDisease());
-        map.put("renalFailure", history.isRenalFailure());
-        map.put("allergies", history.getAllergies());
-        map.put("chronicTreatment", history.getChronicTreatment());
-        map.put("otherHistory", history.getOtherHistory());
-        map.put("dateChanged", history.getDateCreated());
-        return map;
+        return result;
     }
 
     @Override
@@ -187,6 +200,7 @@ public class PatientviewDAOImpl implements PatientviewDao {
         List<Map<String, Object>> result = new ArrayList<>();
         for (AdmissionContext a : contexts) {
             Map<String, Object> map = new HashMap<>();
+            map.put("uuid", a.getUuid());
             map.put("admissionReason", a.getAdmissionReason());
             map.put("symptomOnsetDate", a.getSymptomOnsetDate());
             map.put("diagnosisDelayDays", a.getDiagnosisDelayDays());
@@ -234,6 +248,7 @@ public class PatientviewDAOImpl implements PatientviewDao {
         List<Map<String, Object>> result = new ArrayList<>();
         for (VitalSigns v : vitals) {
             Map<String, Object> map = new HashMap<>();
+            map.put("uuid", v.getUuid());
             map.put("examDate", v.getExamDate());
             map.put("temperature", v.getTemperature());
             map.put("bpSystolic", v.getBpSystolic());
@@ -307,6 +322,7 @@ public class PatientviewDAOImpl implements PatientviewDao {
         List<Map<String, Object>> result = new ArrayList<>();
         for (NeuroExamDetail n : exams) {
             Map<String, Object> map = new HashMap<>();
+            map.put("uuid", n.getUuid());
             map.put("examDate", n.getExamDate());
             map.put("orientation", n.getOrientation());
             map.put("language", n.getLanguage());
@@ -377,6 +393,7 @@ public class PatientviewDAOImpl implements PatientviewDao {
         List<Map<String, Object>> result = new ArrayList<>();
         for (NeurosurgicalDiagnosis d : diagnoses) {
             Map<String, Object> map = new HashMap<>();
+            map.put("uuid", d.getUuid());
             map.put("dateCreated", d.getDateCreated());
             map.put("diagnosis", d.getDiagnosis());
             map.put("lesionLocation", d.getLesionLocation());
@@ -417,6 +434,7 @@ public class PatientviewDAOImpl implements PatientviewDao {
         List<Map<String, Object>> result = new ArrayList<>();
         for (Pathology p : reports) {
             Map<String, Object> map = new HashMap<>();
+            map.put("uuid", p.getUuid());
             map.put("dateCreated", p.getDateCreated());
             map.put("studyFindings", p.getStudyFindings());
             map.put("whoGrade", p.getWhoGrade());
@@ -455,6 +473,7 @@ public class PatientviewDAOImpl implements PatientviewDao {
         List<Map<String, Object>> result = new ArrayList<>();
         for (MedicalTreatment treatment : records) {
             Map<String, Object> map = new HashMap<>();
+            map.put("uuid", treatment.getUuid());
             map.put("corticosteroids", treatment.isCorticosteroids());
             map.put("antiepileptics", treatment.isAntiepileptics());
             map.put("antibiotics", treatment.isAntibiotics());
@@ -497,6 +516,7 @@ public class PatientviewDAOImpl implements PatientviewDao {
         List<Map<String, Object>> result = new ArrayList<>();
         for (SurgicalTreatment treatment : records) {
             Map<String, Object> map = new HashMap<>();
+            map.put("uuid", treatment.getUuid());
             map.put("procedurePerformed", treatment.getProcedurePerformed());
             map.put("resectionType", treatment.getResectionType());
             map.put("surgeryDate", treatment.getSurgeryDate());
@@ -543,6 +563,7 @@ public class PatientviewDAOImpl implements PatientviewDao {
         List<Map<String, Object>> result = new ArrayList<>();
         for (PostopEvolution evolution : records) {
             Map<String, Object> map = new HashMap<>();
+            map.put("uuid", evolution.getUuid());
             map.put("postopGcs", evolution.getPostopGcs());
             map.put("postopKarnofsky", evolution.getPostopKarnofsky());
             map.put("neurologicalStatus", evolution.getNeurologicalStatus());
@@ -593,6 +614,7 @@ public class PatientviewDAOImpl implements PatientviewDao {
         List<Map<String, Object>> result = new ArrayList<>();
         for (Sequelae sequelae : records) {
             Map<String, Object> map = new HashMap<>();
+            map.put("uuid", sequelae.getUuid());
             map.put("motorDeficit", sequelae.getMotorDeficit());
             map.put("sensoryDeficit", sequelae.getSensoryDeficit());
             map.put("aphasia", sequelae.isAphasia());
@@ -635,6 +657,7 @@ public class PatientviewDAOImpl implements PatientviewDao {
         List<Map<String, Object>> result = new ArrayList<>();
         for (LabResult labResult : records) {
             Map<String, Object> map = new HashMap<>();
+            map.put("uuid", labResult.getUuid());
             map.put("sampleDate", labResult.getSampleDate());
             map.put("completeBloodCount", labResult.getCompleteBloodCount());
             map.put("crp", labResult.getCrp());
@@ -681,6 +704,7 @@ public class PatientviewDAOImpl implements PatientviewDao {
         List<Map<String, Object>> result = new ArrayList<>();
         for (Discharge discharge : records) {
             Map<String, Object> map = new HashMap<>();
+            map.put("uuid", discharge.getUuid());
             map.put("dischargeDate", discharge.getDischargeDate());
             map.put("dischargeMode", discharge.getDischargeMode());
             map.put("notes", discharge.getNotes());
@@ -715,6 +739,7 @@ public class PatientviewDAOImpl implements PatientviewDao {
         List<Map<String, Object>> result = new ArrayList<>();
         for (FollowUp followUp : records) {
             Map<String, Object> map = new HashMap<>();
+            map.put("uuid", followUp.getUuid());
             map.put("consultationDate", followUp.getConsultationDate());
             map.put("clinicalExam", followUp.getClinicalExam());
             map.put("neurologicalExam", followUp.getNeurologicalExam());
@@ -759,6 +784,7 @@ public class PatientviewDAOImpl implements PatientviewDao {
         List<Map<String, Object>> result = new ArrayList<>();
         for (ImagingNote note : records) {
             Map<String, Object> map = new HashMap<>();
+            map.put("uuid", note.getUuid());
             map.put("examType", note.getExamType());
             map.put("examDate", note.getExamDate());
             map.put("findings", note.getFindings());
@@ -782,5 +808,42 @@ public class PatientviewDAOImpl implements PatientviewDao {
         note.setDateCreated(new Date());
 
         sessionFactory.getCurrentSession().save(note);
+    }
+    /**
+     * Entities the projector can read. Used only to collect the distinct patients holding any
+     * neurosurgery record - Hibernate's HQL has no UNION, and sixteen index-backed "select
+     * distinct patient" queries are cheaper to read than one hand-written native union.
+     */
+    private static final String[] PROJECTABLE_ENTITIES = {
+            "NeuroAssessment", "SurgicalHistory", "MedicalHistory", "AdmissionContext",
+            "VitalSigns", "NeuroExamDetail", "NeurosurgicalDiagnosis", "Pathology",
+            "MedicalTreatment", "SurgicalTreatment", "PostopEvolution", "Sequelae",
+            "LabResult", "Discharge", "FollowUp", "ImagingNote"
+    };
+
+    @Override
+    public List<String> getProjectedSourceUuids(Patient patient, String sourceSet) {
+        return sessionFactory.getCurrentSession()
+                .createQuery("select p.sourceUuid from FhirProjection p where p.patient = :patient"
+                        + " and p.sourceSet = :sourceSet", String.class)
+                .setParameter("patient", patient)
+                .setParameter("sourceSet", sourceSet)
+                .list();
+    }
+
+    @Override
+    public void saveFhirProjection(FhirProjection projection) {
+        sessionFactory.getCurrentSession().save(projection);
+    }
+
+    @Override
+    public List<Patient> getPatientsWithNeurosurgeryRecords() {
+        Set<Patient> patients = new LinkedHashSet<>();
+        for (String entity : PROJECTABLE_ENTITIES) {
+            patients.addAll(sessionFactory.getCurrentSession()
+                    .createQuery("select distinct e.patient from " + entity + " e", Patient.class)
+                    .list());
+        }
+        return new ArrayList<>(patients);
     }
 }

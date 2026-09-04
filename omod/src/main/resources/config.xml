@@ -4,7 +4,7 @@
     <!-- Basic Module Properties -->
     <id>patientview</id>
     <name>Neurosurgery Patient View Override</name>
-    <version>1.3.0</version>
+    <version>1.4.1</version>
     <package>org.openmrs.module.patientview</package>
     <author>Hani</author>
     <description>
@@ -61,6 +61,7 @@
         org/openmrs/module/patientview/api/model/Discharge.hbm.xml
         org/openmrs/module/patientview/api/model/FollowUp.hbm.xml
         org/openmrs/module/patientview/api/model/ImagingNote.hbm.xml
+        org/openmrs/module/patientview/api/model/FhirProjection.hbm.xml
     </mappingFiles>
 
     <!-- Required Privileges -->
