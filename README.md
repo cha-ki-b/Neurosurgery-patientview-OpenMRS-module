@@ -8,7 +8,7 @@ sequelae, discharge and follow-up - with full CRUD backed by MySQL and a two-tie
 privilege model so nurses and surgeons/radiologists see different levels of access.
 
 **Target platform:** OpenMRS Platform 2.5.9 / Reference Application 2.12.2
-**Module ID:** `patientview` · **Package:** `org.openmrs.module.patientview` · **Version:** `1.4.2`
+**Module ID:** `patientview` · **Package:** `org.openmrs.module.patientview` · **Version:** `1.4.3`
 
 Thanks to `hanyG175` and `bouzenaali` for starting the job: [Repo](https://github.com/hanyG175/openmrs-patientview-module)
 
@@ -327,6 +327,13 @@ credentials moved from hardcoded YAML into a `.env` file. These files update the
 
 ## 12. Version history
 
+- **1.4.3** — **Fixes a syntax error that had disabled every CRUD form since 1.4.0.** An
+  unescaped apostrophe in one error message meant `patientview-crud.js` never parsed, so
+  *every* function it defines was undefined in the browser - not only the new one. Adds a
+  build-time guard (`everyJavascriptFileMustParse`) that compiles each `.js` with Nashorn,
+  since the build checked XML, JSON and GSP braces but never JavaScript. Also curates 13
+  more fields against a freshly loaded CIEL, including Glasgow (`CIEL:160347`) and
+  Karnofsky (`CIEL:5283`): curation 26 → 35 of 120, sets exporting 13 → 14.
 - **1.4.2** — Curates the free-text `notes` field on all eleven sets that have one to
   `CIEL:162169` (Text of encounter note), verified against a live dictionary. Takes curation
   from 15 fields to 26 and the sets exporting anything from 2 to 13 on a stock Reference
@@ -558,7 +565,7 @@ fields. Concepts are resolved at runtime with
 those are install-specific: an id that is correct here would point at a different concept, or
 none, on another server.
 
-**26 of the 121 fields carry a concept.** Those were each verified against a public
+**35 of the 121 fields carry a concept.** Those were each verified against a public
 source - the CIEL vitals codes against `openmrs-module-referenceapplication`'s own
 `htmlforms/vitals.xml`, and the Glasgow/Karnofsky codes against loinc.org:
 

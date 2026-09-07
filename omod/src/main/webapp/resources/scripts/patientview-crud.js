@@ -119,12 +119,12 @@ function syncFhirProjection() {
                     + (d.observations || 0) + ' observation(s), '
                     + (d.conditions || 0) + ' diagnostic(s).');
             } else {
-                showErrorMessage((response && response.message) || 'Erreur lors de l'export');
+                showErrorMessage((response && response.message) || "Erreur lors de l'export");
             }
         },
         error: function(xhr) {
             showErrorMessage((xhr && xhr.responseJSON && xhr.responseJSON.message)
-                || 'Erreur lors de l'export');
+                || "Erreur lors de l'export");
         }
     });
 }

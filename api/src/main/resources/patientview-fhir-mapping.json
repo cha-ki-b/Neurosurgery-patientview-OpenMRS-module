@@ -113,7 +113,12 @@
           "id": "diabetes",
           "name": "Diabetes mellitus",
           "type": "boolean",
-          "concept": []
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "119481"
+            }
+          ]
         },
         {
           "id": "hypertension",
@@ -125,7 +130,12 @@
           "id": "epilepsy",
           "name": "Epilepsy",
           "type": "boolean",
-          "concept": []
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "155"
+            }
+          ]
         },
         {
           "id": "stroke",
@@ -137,7 +147,12 @@
           "id": "heartDisease",
           "name": "Heart disease",
           "type": "boolean",
-          "concept": []
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "139071"
+            }
+          ]
         },
         {
           "id": "renalFailure",
@@ -350,6 +365,10 @@
           "type": "numeric",
           "concept": [
             {
+              "source": "CIEL",
+              "code": "160347"
+            },
+            {
               "source": "LOINC",
               "code": "9269-2"
             }
@@ -393,6 +412,10 @@
           "name": "Karnofsky Performance Status score",
           "type": "numeric",
           "concept": [
+            {
+              "source": "CIEL",
+              "code": "5283"
+            },
             {
               "source": "LOINC",
               "code": "89243-0"
@@ -525,7 +548,12 @@
           "id": "vomiting",
           "name": "Vomiting",
           "type": "boolean",
-          "concept": []
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "122983"
+            }
+          ]
         },
         {
           "id": "visualDisturbances",
@@ -746,7 +774,12 @@
           "id": "antibiotics",
           "name": "Antibiotic therapy",
           "type": "boolean",
-          "concept": []
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "164174"
+            }
+          ]
         },
         {
           "id": "anticoagulants",
@@ -915,6 +948,10 @@
           "type": "numeric",
           "concept": [
             {
+              "source": "CIEL",
+              "code": "160347"
+            },
+            {
               "source": "LOINC",
               "code": "9269-2"
             }
@@ -925,6 +962,10 @@
           "name": "Karnofsky Performance Status score",
           "type": "numeric",
           "concept": [
+            {
+              "source": "CIEL",
+              "code": "5283"
+            },
             {
               "source": "LOINC",
               "code": "89243-0"
@@ -977,7 +1018,12 @@
           "id": "deathDate",
           "name": "Date of death",
           "type": "date",
-          "concept": []
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "1543"
+            }
+          ]
         },
         {
           "id": "notes",
@@ -1027,7 +1073,12 @@
           "id": "cognitiveDisorders",
           "name": "Cognitive impairment",
           "type": "boolean",
-          "concept": []
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "110434"
+            }
+          ]
         },
         {
           "id": "secondaryEpilepsy",
@@ -1125,7 +1176,12 @@
           "id": "recurrence",
           "name": "Disease recurrence",
           "type": "boolean",
-          "concept": []
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "1688"
+            }
+          ]
         },
         {
           "id": "currentTreatment",
@@ -1137,7 +1193,12 @@
           "id": "nextConsultationDate",
           "name": "Date of next appointment",
           "type": "date",
-          "concept": []
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "5096"
+            }
+          ]
         },
         {
           "id": "notes",
