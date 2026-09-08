@@ -86,13 +86,23 @@
           "id": "referringPhysician",
           "name": "Referring physician",
           "type": "text",
-          "concept": []
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "161103"
+            }
+          ]
         },
         {
           "id": "responsibleNeurosurgeon",
           "name": "Responsible neurosurgeon",
           "type": "text",
-          "concept": []
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "164969"
+            }
+          ]
         }
       ],
       "excluded": [
@@ -218,7 +228,12 @@
           "id": "surgeon",
           "name": "Surgeon",
           "type": "text",
-          "concept": []
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "166688"
+            }
+          ]
         },
         {
           "id": "outcome",
@@ -872,7 +887,12 @@
           "id": "surgeon",
           "name": "Surgeon",
           "type": "text",
-          "concept": []
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "166688"
+            }
+          ]
         },
         {
           "id": "intraoperativeComplications",
@@ -938,7 +958,12 @@
           "id": "studyFindings",
           "name": "Histopathology findings",
           "type": "text",
-          "concept": []
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "161198"
+            }
+          ]
         },
         {
           "id": "immunohistochemistry",
@@ -1129,7 +1154,12 @@
           "id": "secondaryEpilepsy",
           "name": "Secondary epilepsy",
           "type": "boolean",
-          "concept": []
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "155"
+            }
+          ]
         },
         {
           "id": "residualDisability",

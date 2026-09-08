@@ -4,7 +4,7 @@
     <!-- Basic Module Properties -->
     <id>patientview</id>
     <name>Neurosurgery Patient View Override</name>
-    <version>1.4.5</version>
+    <version>1.4.6</version>
     <package>org.openmrs.module.patientview</package>
     <author>Hani</author>
     <description>
