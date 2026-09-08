@@ -156,14 +156,33 @@ public class ObsProjector {
         }
 
         int written = 0;
-        Condition condition = null;
+        List<Condition> conditions = new ArrayList<Condition>();
         for (FieldSpec field : spec.getFields()) {
             Object value = row.get(field.getId());
             if (isBlank(value)) {
                 continue;
             }
             if ("condition".equals(field.getType())) {
-                condition = buildCondition(patient, spec, row, value, when);
+                conditions.add(buildCondition(patient, spec, row, value, when));
+                continue;
+            }
+            if ("conditionFlag".equals(field.getType())) {
+                // Only a true flag is exported. The form cannot distinguish "no" from "not
+                // assessed", so asserting the negative would invent a clinical finding.
+                if (!Boolean.TRUE.equals(value)) {
+                    continue;
+                }
+                if (!field.isCurated()) {
+                    addTo(summary, "uncurated", spec.getId() + "." + field.getId());
+                    continue;
+                }
+                Concept flagConcept = resolve(field.getConcept(), conceptCache);
+                if (flagConcept == null) {
+                    addTo(summary, "unresolved", spec.getId() + "." + field.getId()
+                            + " (" + field.getConcept() + ")");
+                    continue;
+                }
+                conditions.add(buildCodedCondition(patient, flagConcept, when));
                 continue;
             }
             if (!field.isCurated()) {
@@ -188,7 +207,7 @@ public class ObsProjector {
             written++;
         }
 
-        if (written == 0 && condition == null) {
+        if (written == 0 && conditions.isEmpty()) {
             // Nothing resolved for this row - write no empty encounter, and leave it out of the
             // ledger so it is retried once its concepts are curated.
             addTo(summary, "skippedRows", spec.getId());
@@ -199,7 +218,7 @@ public class ObsProjector {
         }
 
         Encounter saved = Context.getEncounterService().saveEncounter(encounter);
-        if (condition != null) {
+        for (Condition condition : conditions) {
             condition.setEncounter(saved);
             Context.getConditionService().saveCondition(condition);
             increment(summary, "conditions");
@@ -241,11 +260,33 @@ public class ObsProjector {
         return condition;
     }
 
+    /**
+     * A Condition carrying a coded diagnosis, for a boolean flag such as a comorbidity or a
+     * post-operative complication.
+     * <p>
+     * These cannot be observations. CIEL models them as Diagnosis-class concepts with datatype
+     * N/A, and an Obs must hold a value of the concept's datatype - so the projector would refuse
+     * every one of them. Representing "this patient has hydrocephalus" as a Condition is both the
+     * only thing that works and the correct FHIR modelling; FHIR2 serves it as a Condition
+     * resource with a coded {@code Condition.code}.
+     */
+    private Condition buildCodedCondition(Patient patient, Concept concept, Date when) {
+        CodedOrFreeText coded = new CodedOrFreeText();
+        coded.setCoded(concept);
+
+        Condition condition = new Condition();
+        condition.setPatient(patient);
+        condition.setCondition(coded);
+        condition.setClinicalStatus(ConditionClinicalStatus.ACTIVE);
+        condition.setOnsetDate(when);
+        return condition;
+    }
+
     /** Folds the lesion descriptors into Condition.additionalDetail, since they have no code. */
     private String describeLesion(SetSpec spec, Map<String, Object> row) {
         StringBuilder detail = new StringBuilder();
         for (FieldSpec field : spec.getFields()) {
-            if ("condition".equals(field.getType())) {
+            if ("condition".equals(field.getType()) || "conditionFlag".equals(field.getType())) {
                 continue;
             }
             Object value = row.get(field.getId());
@@ -332,6 +373,22 @@ public class ObsProjector {
             int setResolvable = 0;
             for (FieldSpec field : spec.getFields()) {
                 if ("condition".equals(field.getType())) {
+                    continue;
+                }
+                if ("conditionFlag".equals(field.getType())) {
+                    // No datatype to satisfy - the concept becomes Condition.code, not an obs value.
+                    fields++;
+                    if (field.isCurated()) {
+                        curated++;
+                        if (resolve(field.getConcept(), cache) != null) {
+                            setResolvable++;
+                            resolvable++;
+                        } else {
+                            notResolvable.add(field.getId() + " (" + field.getConcept() + ")");
+                        }
+                    } else {
+                        needsConcept.add(field.getId() + " \u2014 " + field.getName());
+                    }
                     continue;
                 }
                 fields++;

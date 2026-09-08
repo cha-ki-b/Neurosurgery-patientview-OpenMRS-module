@@ -45,7 +45,10 @@ MANIFEST = os.path.join(HERE, os.pardir, "api", "src", "main", "resources",
 # What concept datatype each manifest field type can actually be written to. Mirrors
 # ObsProjector.buildObs - a candidate outside this set would be reported as a datatype
 # mismatch at projection time, so it is worth flagging during review instead.
+# conditionFlag becomes Condition.code rather than an obs value, so a Diagnosis-class
+# concept (datatype N/A) is exactly what it wants - the opposite of every other type.
 COMPATIBLE = {
+    "conditionFlag": {"N/A", "Coded"},
     "numeric": {"Numeric"},
     "text": {"Text"},
     "boolean": {"Boolean", "Coded"},

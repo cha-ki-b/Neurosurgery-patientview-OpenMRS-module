@@ -50,7 +50,8 @@ public class FhirMappingManifestTest {
             "src/main/java/org/openmrs/module/patientview/api/fhir/ObsProjector.java");
 
     private static final Set<String> VALID_TYPES =
-            new HashSet<String>(Arrays.asList("numeric", "text", "boolean", "date", "condition"));
+            new HashSet<String>(Arrays.asList("numeric", "text", "boolean", "date", "condition",
+                    "conditionFlag"));
 
     private String read(File file) throws IOException {
         assertTrue("expected source file not found: " + file, file.isFile());
@@ -308,8 +309,8 @@ public class FhirMappingManifestTest {
         // still catches the regression that matters: concepts silently disappearing from the
         // manifest. Raise these as curation progresses.
         assertTrue("curation has regressed: only " + curated + " fields carry a concept, "
-                        + "down from the 35 this release shipped with",
-                curated >= 35);
+                        + "down from the 44 this release shipped with",
+                curated >= 44);
         assertTrue("only " + setsThatExportToday + " sets export anything, down from 14",
                 setsThatExportToday >= 14);
     }

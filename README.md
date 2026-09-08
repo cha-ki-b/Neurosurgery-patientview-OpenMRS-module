@@ -8,7 +8,7 @@ sequelae, discharge and follow-up - with full CRUD backed by MySQL and a two-tie
 privilege model so nurses and surgeons/radiologists see different levels of access.
 
 **Target platform:** OpenMRS Platform 2.5.9 / Reference Application 2.12.2
-**Module ID:** `patientview` · **Package:** `org.openmrs.module.patientview` · **Version:** `1.4.3`
+**Module ID:** `patientview` · **Package:** `org.openmrs.module.patientview` · **Version:** `1.4.4`
 
 Thanks to `hanyG175` and `bouzenaali` for starting the job: [Repo](https://github.com/hanyG175/openmrs-patientview-module)
 
@@ -327,6 +327,14 @@ credentials moved from hardcoded YAML into a `.env` file. These files update the
 
 ## 12. Version history
 
+- **1.4.4** — Adds the `conditionFlag` field type: a true boolean comorbidity or
+  complication now exports as an OpenMRS `Condition` with a coded diagnosis, not as an
+  observation. CIEL carries these as Diagnosis-class concepts with datatype N/A, which no
+  obs can hold - so the concept was right all along and the representation was wrong, and
+  all 22 such fields were being reported as datatype mismatches. Nine verified fields
+  converted (hypertension, stroke, renal failure, headache, visual disturbance,
+  post-operative infection, hydrocephalus, CSF leak, aphasia); curation 35 → 44 of 120.
+  Covered by `ObsProjectorConditionFlagTest`, the projector's first unit tests.
 - **1.4.3** — **Fixes a syntax error that had disabled every CRUD form since 1.4.0.** An
   unescaped apostrophe in one error message meant `patientview-crud.js` never parsed, so
   *every* function it defines was undefined in the browser - not only the new one. Adds a
@@ -565,7 +573,7 @@ fields. Concepts are resolved at runtime with
 those are install-specific: an id that is correct here would point at a different concept, or
 none, on another server.
 
-**35 of the 121 fields carry a concept.** Those were each verified against a public
+**44 of the 121 fields carry a concept.** Those were each verified against a public
 source - the CIEL vitals codes against `openmrs-module-referenceapplication`'s own
 `htmlforms/vitals.xml`, and the Glasgow/Karnofsky codes against loinc.org:
 

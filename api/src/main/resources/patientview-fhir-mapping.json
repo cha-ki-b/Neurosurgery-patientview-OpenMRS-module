@@ -123,8 +123,13 @@
         {
           "id": "hypertension",
           "name": "Hypertension",
-          "type": "boolean",
-          "concept": []
+          "type": "conditionFlag",
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "117399"
+            }
+          ]
         },
         {
           "id": "epilepsy",
@@ -140,8 +145,13 @@
         {
           "id": "stroke",
           "name": "Cerebrovascular accident",
-          "type": "boolean",
-          "concept": []
+          "type": "conditionFlag",
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "111103"
+            }
+          ]
         },
         {
           "id": "heartDisease",
@@ -157,8 +167,13 @@
         {
           "id": "renalFailure",
           "name": "Renal failure",
-          "type": "boolean",
-          "concept": []
+          "type": "conditionFlag",
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "113338"
+            }
+          ]
         },
         {
           "id": "allergies",
@@ -541,8 +556,13 @@
         {
           "id": "headache",
           "name": "Headache",
-          "type": "boolean",
-          "concept": []
+          "type": "conditionFlag",
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "139084"
+            }
+          ]
         },
         {
           "id": "vomiting",
@@ -558,8 +578,13 @@
         {
           "id": "visualDisturbances",
           "name": "Visual disturbance",
-          "type": "boolean",
-          "concept": []
+          "type": "conditionFlag",
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "123074"
+            }
+          ]
         },
         {
           "id": "sphincterDisturbances",
@@ -981,8 +1006,13 @@
         {
           "id": "infection",
           "name": "Postoperative infection",
-          "type": "boolean",
-          "concept": []
+          "type": "conditionFlag",
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "129346"
+            }
+          ]
         },
         {
           "id": "hemorrhage",
@@ -993,14 +1023,24 @@
         {
           "id": "hydrocephalus",
           "name": "Hydrocephalus",
-          "type": "boolean",
-          "concept": []
+          "type": "conditionFlag",
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "117470"
+            }
+          ]
         },
         {
           "id": "csfLeak",
           "name": "Cerebrospinal fluid leak",
-          "type": "boolean",
-          "concept": []
+          "type": "conditionFlag",
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "155486"
+            }
+          ]
         },
         {
           "id": "seizures",
@@ -1066,8 +1106,13 @@
         {
           "id": "aphasia",
           "name": "Aphasia",
-          "type": "boolean",
-          "concept": []
+          "type": "conditionFlag",
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "121529"
+            }
+          ]
         },
         {
           "id": "cognitiveDisorders",
