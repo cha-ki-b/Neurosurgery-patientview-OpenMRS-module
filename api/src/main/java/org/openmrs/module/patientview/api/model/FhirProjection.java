@@ -27,6 +27,13 @@ public class FhirProjection {
     private String sourceUuid;
     /** uuid of the Encounter the projected observations were attached to. */
     private String encounterUuid;
+    /**
+     * Fingerprint of the mapping this row was projected with. When the manifest changes - a
+     * concept curated, a field retyped - the fingerprint stops matching and the row is projected
+     * again, superseding its previous output. Without it a row projected before curation would
+     * keep whatever little it managed to export, forever.
+     */
+    private String manifestFingerprint;
     private Date dateCreated;
 
     public Integer getId() { return id; }
@@ -46,6 +53,11 @@ public class FhirProjection {
 
     public String getEncounterUuid() { return encounterUuid; }
     public void setEncounterUuid(String encounterUuid) { this.encounterUuid = encounterUuid; }
+
+    public String getManifestFingerprint() { return manifestFingerprint; }
+    public void setManifestFingerprint(String manifestFingerprint) {
+        this.manifestFingerprint = manifestFingerprint;
+    }
 
     public Date getDateCreated() { return dateCreated; }
     public void setDateCreated(Date dateCreated) { this.dateCreated = dateCreated; }

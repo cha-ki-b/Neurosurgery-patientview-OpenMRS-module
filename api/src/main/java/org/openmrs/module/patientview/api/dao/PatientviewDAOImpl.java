@@ -822,18 +822,39 @@ public class PatientviewDAOImpl implements PatientviewDao {
     };
 
     @Override
-    public List<String> getProjectedSourceUuids(Patient patient, String sourceSet) {
-        return sessionFactory.getCurrentSession()
-                .createQuery("select p.sourceUuid from FhirProjection p where p.patient = :patient"
-                        + " and p.sourceSet = :sourceSet", String.class)
+    public Map<String, String> getProjectionFingerprints(Patient patient, String sourceSet) {
+        List<Object[]> rows = sessionFactory.getCurrentSession()
+                .createQuery("select p.sourceUuid, p.manifestFingerprint from FhirProjection p"
+                        + " where p.patient = :patient and p.sourceSet = :sourceSet", Object[].class)
                 .setParameter("patient", patient)
                 .setParameter("sourceSet", sourceSet)
                 .list();
+        Map<String, String> fingerprints = new HashMap<>();
+        for (Object[] row : rows) {
+            fingerprints.put((String) row[0], (String) row[1]);
+        }
+        return fingerprints;
+    }
+
+    @Override
+    public FhirProjection getFhirProjection(Patient patient, String sourceSet, String sourceUuid) {
+        List<FhirProjection> found = sessionFactory.getCurrentSession()
+                .createQuery("from FhirProjection p where p.patient = :patient"
+                        + " and p.sourceSet = :sourceSet and p.sourceUuid = :sourceUuid",
+                        FhirProjection.class)
+                .setParameter("patient", patient)
+                .setParameter("sourceSet", sourceSet)
+                .setParameter("sourceUuid", sourceUuid)
+                .setMaxResults(1)
+                .list();
+        return found.isEmpty() ? null : found.get(0);
     }
 
     @Override
     public void saveFhirProjection(FhirProjection projection) {
-        sessionFactory.getCurrentSession().save(projection);
+        // saveOrUpdate rather than save: a re-projected row keeps its ledger entry and has the
+        // new encounter and fingerprint written over the old ones.
+        sessionFactory.getCurrentSession().saveOrUpdate(projection);
     }
 
     @Override

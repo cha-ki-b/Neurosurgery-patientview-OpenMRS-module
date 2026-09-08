@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,6 +74,9 @@ public class ObsProjector {
     /** The limited getters take a max; projection always wants the whole history. */
     private static final int ALL_ROWS = Integer.MAX_VALUE;
 
+    private static final String SUPERSEDED =
+            "superseded by patientview re-projection after a mapping change";
+
     private PatientviewDao dao;
 
     public void setDao(PatientviewDao dao) {
@@ -103,15 +105,26 @@ public class ObsProjector {
             summary.put("encounterTypeMissing", true);
             return summary;
         }
-        Set<String> alreadyDone = new HashSet<String>(dao.getProjectedSourceUuids(patient, setId));
+        Map<String, String> projected = dao.getProjectionFingerprints(patient, setId);
+        String fingerprint = fingerprintOf(spec);
         Map<String, Concept> conceptCache = new HashMap<String, Concept>();
         for (Map<String, Object> row : fetchRows(patient, setId)) {
             Object sourceUuid = row.get("uuid");
-            if (sourceUuid == null || alreadyDone.contains(sourceUuid.toString())) {
+            if (sourceUuid == null) {
                 continue;
             }
-            projectRow(patient, spec, row, sourceUuid.toString(), encounterType, conceptCache,
-                    summary);
+            String uuid = sourceUuid.toString();
+            if (projected.containsKey(uuid)) {
+                if (fingerprint.equals(projected.get(uuid))) {
+                    continue;
+                }
+                // The mapping changed since this row was projected - a concept curated, a field
+                // retyped - so its previous output is out of date. Void it and project again,
+                // rather than leaving the row stuck with whatever resolved at the time.
+                supersede(patient, setId, uuid, summary);
+            }
+            projectRow(patient, spec, row, uuid, encounterType, conceptCache, summary,
+                    fingerprint);
         }
         return summary;
     }
@@ -130,7 +143,8 @@ public class ObsProjector {
 
     private void projectRow(Patient patient, SetSpec spec, Map<String, Object> row,
                             String sourceUuid, EncounterType encounterType,
-                            Map<String, Concept> conceptCache, Map<String, Object> summary) {
+                            Map<String, Concept> conceptCache, Map<String, Object> summary,
+                            String fingerprint) {
         Date when = asDate(row.get(spec.getDateKey()));
         if (when == null) {
             when = asDate(row.get("dateCreated"));
@@ -224,12 +238,18 @@ public class ObsProjector {
             increment(summary, "conditions");
         }
 
-        FhirProjection ledger = new FhirProjection();
-        ledger.setUuid(UUID.randomUUID().toString());
-        ledger.setPatient(patient);
-        ledger.setSourceSet(spec.getId());
-        ledger.setSourceUuid(sourceUuid);
+        // Reuse the existing entry when re-projecting: one ledger row per source row is what the
+        // unique index guarantees, and the superseded encounter carries its own void reason.
+        FhirProjection ledger = dao.getFhirProjection(patient, spec.getId(), sourceUuid);
+        if (ledger == null) {
+            ledger = new FhirProjection();
+            ledger.setUuid(UUID.randomUUID().toString());
+            ledger.setPatient(patient);
+            ledger.setSourceSet(spec.getId());
+            ledger.setSourceUuid(sourceUuid);
+        }
         ledger.setEncounterUuid(saved.getUuid());
+        ledger.setManifestFingerprint(fingerprint);
         ledger.setDateCreated(new Date());
         dao.saveFhirProjection(ledger);
 
@@ -350,6 +370,68 @@ public class ObsProjector {
         addTo(summary, "datatypeMismatch", spec.getId() + "." + field.getId()
                 + " (field is " + field.getType() + ", concept is " + datatype.getName() + ")");
         return null;
+    }
+
+    /**
+     * Voids the output of a previous projection of one row, so re-projecting supersedes it
+     * instead of duplicating it. Voiding rather than deleting keeps the audit trail: the void
+     * reason records why the encounter was replaced, which is where the history of a superseded
+     * projection lives now that the ledger row itself is reused.
+     */
+    private void supersede(Patient patient, String setId, String sourceUuid,
+                           Map<String, Object> summary) {
+        FhirProjection existing = dao.getFhirProjection(patient, setId, sourceUuid);
+        if (existing == null || existing.getEncounterUuid() == null) {
+            return;
+        }
+        Encounter previous = Context.getEncounterService()
+                .getEncounterByUuid(existing.getEncounterUuid());
+        if (previous == null || Boolean.TRUE.equals(previous.getVoided())) {
+            return;
+        }
+        // Conditions are linked to the encounter but are not voided by voidEncounter, which
+        // cascades only to observations - so they have to be voided explicitly or they would
+        // survive as duplicates of the ones the re-projection is about to create.
+        for (Condition condition : Context.getConditionService().getConditionsByEncounter(previous)) {
+            Context.getConditionService().voidCondition(condition, SUPERSEDED);
+        }
+        Context.getEncounterService().voidEncounter(previous, SUPERSEDED);
+        increment(summary, "superseded");
+    }
+
+    /**
+     * A stable digest of everything about a set's mapping that changes what a projection would
+     * produce: each field's id, type and ordered concept references, plus the group concept and
+     * the date key. Curating a concept changes it; editing a label or a comment does not, so
+     * cosmetic manifest edits do not trigger a pointless re-projection of every record.
+     */
+    static String fingerprintOf(SetSpec spec) {
+        StringBuilder material = new StringBuilder();
+        material.append(spec.getId()).append('|').append(spec.getDateKey()).append('|');
+        for (ConceptRef ref : spec.getGroupConcept()) {
+            material.append(ref).append(',');
+        }
+        material.append('|');
+        for (FieldSpec field : spec.getFields()) {
+            material.append(field.getId()).append(':').append(field.getType()).append('=');
+            for (ConceptRef ref : field.getConcept()) {
+                material.append(ref).append(',');
+            }
+            material.append(';');
+        }
+        try {
+            java.security.MessageDigest digest = java.security.MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(material.toString().getBytes("UTF-8"));
+            StringBuilder hex = new StringBuilder();
+            for (int i = 0; i < 16; i++) {
+                hex.append(String.format("%02x", hash[i]));
+            }
+            return hex.toString();
+        } catch (Exception e) {
+            // No digest available is not a reason to stop exporting; fall back to the raw
+            // material, which is longer but just as correct a change detector.
+            return material.toString();
+        }
     }
 
     // ------------------------------------------------------------------ coverage report

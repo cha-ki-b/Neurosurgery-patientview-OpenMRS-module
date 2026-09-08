@@ -8,7 +8,7 @@ sequelae, discharge and follow-up - with full CRUD backed by MySQL and a two-tie
 privilege model so nurses and surgeons/radiologists see different levels of access.
 
 **Target platform:** OpenMRS Platform 2.5.9 / Reference Application 2.12.2
-**Module ID:** `patientview` · **Package:** `org.openmrs.module.patientview` · **Version:** `1.4.4`
+**Module ID:** `patientview` · **Package:** `org.openmrs.module.patientview` · **Version:** `1.4.5`
 
 Thanks to `hanyG175` and `bouzenaali` for starting the job: [Repo](https://github.com/hanyG175/openmrs-patientview-module)
 
@@ -327,6 +327,13 @@ credentials moved from hardcoded YAML into a `.env` file. These files update the
 
 ## 12. Version history
 
+- **1.4.5** — **Curating a concept now re-projects the rows it affects, automatically.**
+  Each ledger entry records a fingerprint of the mapping it was projected with; when that
+  mapping changes the row is projected again and its previous encounter and conditions are
+  voided, rather than staying stuck with whatever resolved at the time. Previously this
+  needed voiding and clearing the ledger by hand, which had already been done twice.
+  Rows written before 1.4.5 have no fingerprint and so count as stale, meaning the upgrade
+  itself picks up every concept curated so far.
 - **1.4.4** — Adds the `conditionFlag` field type: a true boolean comorbidity or
   complication now exports as an OpenMRS `Condition` with a coded diagnosis, not as an
   observation. CIEL carries these as Diagnosis-class concepts with datatype N/A, which no
