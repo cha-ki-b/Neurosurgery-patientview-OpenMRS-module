@@ -1,0 +1,5 @@
+# Database dumps must never be committed: they carry patient data and the users
+# table (password hashes and salts). Two were pushed to a public remote by a blanket
+# "git add -A" and had to be purged from history.
+*.sql
+openmrs-backup-*.sql

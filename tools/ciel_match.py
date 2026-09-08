@@ -45,15 +45,44 @@ MANIFEST = os.path.join(HERE, os.pardir, "api", "src", "main", "resources",
 # What concept datatype each manifest field type can actually be written to. Mirrors
 # ObsProjector.buildObs - a candidate outside this set would be reported as a datatype
 # mismatch at projection time, so it is worth flagging during review instead.
+# conditionFlag becomes Condition.code rather than an obs value, so a Diagnosis-class
+# concept (datatype N/A) is exactly what it wants - the opposite of every other type.
 COMPATIBLE = {
+    "conditionFlag": {"N/A", "Coded"},
     "numeric": {"Numeric"},
     "text": {"Text"},
     "boolean": {"Boolean", "Coded"},
     "date": {"Date", "Datetime"},
 }
 
-COLUMNS = ["set_id", "field_id", "label", "field_type", "match", "ciel_code",
+COLUMNS = ["set_id", "field_id", "label", "field_type", "match", "source", "code",
            "concept_name", "datatype"]
+
+# Mapping sources worth suggesting for an observation concept. CIEL is the module's primary
+# dictionary; LOINC earns its place because a stock Reference Application carries LOINC-mapped
+# vitals and a general clinical-note concept, and because the manifest already declares Glasgow
+# and Karnofsky against LOINC. Diagnosis terminologies (ICD, SNOMED) are deliberately excluded:
+# they code problems, not the observations this manifest is made of.
+SOURCES = ("CIEL", "LOINC")
+
+# Words too generic to be worth a loose match on their own.
+STOPWORDS = {"the", "and", "for", "with", "date", "type", "other", "general", "patient",
+             "score", "total", "left", "right", "of"}
+
+
+def keywords(label):
+    """Distinctive words in a label, for a looser third match tier.
+
+    Matching only on the whole label misses real hits: the manifest says "Clinical note" and a
+    stock dictionary calls it "General patient note", which shares no substring with it.
+
+    Every distinctive word is tried, not just the longest - measured against a real dictionary,
+    "longest" picked "clinical" over "note" and found nothing, which is precisely the case this
+    tier exists for. The threshold is four characters so "note" qualifies. This produces noise,
+    which is why loose hits sort last and a human still reviews.
+    """
+    words = [w.strip("()/,.").lower() for w in label.split()]
+    return sorted({w for w in words if len(w) >= 4 and w not in STOPWORDS})
 
 
 def load_manifest():
@@ -85,14 +114,20 @@ def emit_sql(manifest):
     print("-- clinician's wording usually lands), but reports the fully specified name so the")
     print("-- reviewer sees what the concept really is.")
     print("-- Review before applying: a name match is a suggestion, not a decision.")
-    print("SELECT %s;" % ", ".join("'%s'" % c for c in COLUMNS))
+    print("-- Run with mysql -N: column headings would otherwise arrive as data rows, since a")
+    print("-- UNION's headings are the raw SQL expressions of its first branch.")
+    sources = ", ".join("'%s'" % s for s in SOURCES)
     branches = []
     for set_id, field_id, label, field_type in fields:
         needle = sql_escape(label)
+        loose = "".join("\n     OR LOWER(m.name) LIKE LOWER('%%%s%%')" % sql_escape(word)
+                        for word in keywords(label))
         branches.append("""(
 SELECT '{set_id}', '{field_id}', '{label}', '{field_type}',
-       CASE WHEN LOWER(m.name) = LOWER('{needle}') THEN 'exact' ELSE 'partial' END,
-       crt.code, fsn.name, cdt.name
+       CASE WHEN LOWER(m.name) = LOWER('{needle}') THEN 'exact'
+            WHEN LOWER(m.name) LIKE LOWER('%{needle}%') THEN 'partial'
+            ELSE 'loose' END,
+       crs.name, crt.code, fsn.name, cdt.name
 FROM concept c
 JOIN concept_name m ON m.concept_id = c.concept_id AND m.voided = 0
 JOIN concept_name fsn ON fsn.concept_id = c.concept_id AND fsn.voided = 0
@@ -101,13 +136,14 @@ JOIN concept_datatype cdt ON cdt.concept_datatype_id = c.datatype_id
 JOIN concept_reference_map crm ON crm.concept_id = c.concept_id
 JOIN concept_reference_term crt ON crt.concept_reference_term_id = crm.concept_reference_term_id
 JOIN concept_reference_source crs ON crs.concept_source_id = crt.concept_source_id
-WHERE c.retired = 0 AND crs.name = 'CIEL'
-  AND (LOWER(m.name) = LOWER('{needle}') OR LOWER(m.name) LIKE LOWER('%{needle}%'))
-GROUP BY crt.code, fsn.name, cdt.name, m.name
+WHERE c.retired = 0 AND crs.name IN ({sources})
+  AND (LOWER(m.name) = LOWER('{needle}')
+     OR LOWER(m.name) LIKE LOWER('%{needle}%'){loose})
+GROUP BY crs.name, crt.code, fsn.name, cdt.name, m.name
 ORDER BY 5, CHAR_LENGTH(fsn.name)
-LIMIT 4
+LIMIT 6
 )""".format(set_id=sql_escape(set_id), field_id=sql_escape(field_id),
-            label=needle, field_type=field_type, needle=needle))
+            label=needle, field_type=field_type, needle=needle, sources=sources, loose=loose))
     print("\nUNION ALL\n".join(branches) + ";")
 
 
@@ -120,7 +156,12 @@ def read_tsv(path):
                 continue
             cells = line.split("\t")
             if cells[0] in ("set_id", "'set_id'"):
-                continue  # header emitted by the SELECT, or by mysql itself
+                continue  # a header row, if mysql was run without -N
+            # A UNION's column headings are the raw SQL expressions of its first branch, so a
+            # heading row can look structurally like a data row. The match column is the reliable
+            # discriminator: it only ever holds one of three literals.
+            if len(cells) == len(COLUMNS) and cells[4] not in ("exact", "partial", "loose"):
+                continue
             if len(cells) != len(COLUMNS):
                 print("  ! skipping malformed line (%d columns, expected %d): %s"
                       % (len(cells), len(COLUMNS), line[:70]))
@@ -156,14 +197,18 @@ def apply_rows(manifest, rows):
                 warnings.append("%s.%s already had a concept; left as it was"
                                 % (entry["id"], field["id"]))
                 continue
+            if row["source"] not in SOURCES:
+                warnings.append("%s.%s names mapping source %r, which is not one this manifest "
+                                "uses (%s) - applied anyway, but check it resolves"
+                                % (entry["id"], field["id"], row["source"], "/".join(SOURCES)))
             allowed = COMPATIBLE.get(field["type"], set())
             if row["datatype"] not in allowed:
                 warnings.append(
-                    "%s.%s is %s but CIEL:%s is %s - the projector will report this as a "
+                    "%s.%s is %s but %s:%s is %s - the projector will report this as a "
                     "datatype mismatch and export nothing"
-                    % (entry["id"], field["id"], field["type"], row["ciel_code"],
+                    % (entry["id"], field["id"], field["type"], row["source"], row["code"],
                        row["datatype"]))
-            field["concept"] = [OrderedDict([("source", "CIEL"), ("code", row["ciel_code"])])]
+            field["concept"] = [OrderedDict([("source", row["source"]), ("code", row["code"])])]
             applied += 1
     return applied, warnings
 

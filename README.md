@@ -8,7 +8,7 @@ sequelae, discharge and follow-up - with full CRUD backed by MySQL and a two-tie
 privilege model so nurses and surgeons/radiologists see different levels of access.
 
 **Target platform:** OpenMRS Platform 2.5.9 / Reference Application 2.12.2
-**Module ID:** `patientview` · **Package:** `org.openmrs.module.patientview` · **Version:** `1.4.1`
+**Module ID:** `patientview` · **Package:** `org.openmrs.module.patientview` · **Version:** `1.4.4`
 
 Thanks to `hanyG175` and `bouzenaali` for starting the job: [Repo](https://github.com/hanyG175/openmrs-patientview-module)
 
@@ -286,8 +286,10 @@ credentials moved from hardcoded YAML into a `.env` file. These files update the
 
 - All ten tabs are built (§2); the Fiche de Neurochirurgie is fully covered.
 - **105 of the 120 concept-backed fields have no concept yet** (§15). The export machinery is
-  complete and tested, but only §4 Constantes, §5 Scores, the two §11 scores and §8
-  Diagnostic actually leave the module today. This is dictionary work needing a clinician and a
+  complete and tested. Thirteen of the sixteen sets export *something* on a stock dictionary
+  since 1.4.2, but for most of them that is only their free-text note: the Glasgow and Karnofsky
+  scores still resolve to nothing, because a demo install carries 444 concepts and no Glasgow or
+  Karnofsky at all (§15). This is dictionary work needing a clinician and a
   CIEL curator, not a developer - and `tools/ciel_match.py` turns it from 105 manual searches
   into reviewing a pre-filled table. OCL disabled anonymous API access, so the codes have to be
   resolved against the dictionary as loaded on your own server; that script does exactly that
@@ -325,6 +327,28 @@ credentials moved from hardcoded YAML into a `.env` file. These files update the
 
 ## 12. Version history
 
+- **1.4.4** — Adds the `conditionFlag` field type: a true boolean comorbidity or
+  complication now exports as an OpenMRS `Condition` with a coded diagnosis, not as an
+  observation. CIEL carries these as Diagnosis-class concepts with datatype N/A, which no
+  obs can hold - so the concept was right all along and the representation was wrong, and
+  all 22 such fields were being reported as datatype mismatches. Nine verified fields
+  converted (hypertension, stroke, renal failure, headache, visual disturbance,
+  post-operative infection, hydrocephalus, CSF leak, aphasia); curation 35 → 44 of 120.
+  Covered by `ObsProjectorConditionFlagTest`, the projector's first unit tests.
+- **1.4.3** — **Fixes a syntax error that had disabled every CRUD form since 1.4.0.** An
+  unescaped apostrophe in one error message meant `patientview-crud.js` never parsed, so
+  *every* function it defines was undefined in the browser - not only the new one. Adds a
+  build-time guard (`everyJavascriptFileMustParse`) that compiles each `.js` with Nashorn,
+  since the build checked XML, JSON and GSP braces but never JavaScript. Also curates 13
+  more fields against a freshly loaded CIEL, including Glasgow (`CIEL:160347`) and
+  Karnofsky (`CIEL:5283`): curation 26 → 35 of 120, sets exporting 13 → 14.
+- **1.4.2** — Curates the free-text `notes` field on all eleven sets that have one to
+  `CIEL:162169` (Text of encounter note), verified against a live dictionary. Takes curation
+  from 15 fields to 26 and the sets exporting anything from 2 to 13 on a stock Reference
+  Application. Also fixes two real defects in `ciel_match.py` found by running it against
+  that dictionary: it matched on only the longest word of a label (picking "clinical" over
+  "note", so it missed the very concept this release curates), and it would have ingested a
+  UNION's heading row as data.
 - **1.4.1** — Medical history now exports every recorded version rather than only the
   current one, so each becomes its own dated encounter. Adds `tools/ciel_match.py`, which
   turns the concept backlog from 105 manual dictionary searches into a review pass, and
@@ -549,7 +573,7 @@ fields. Concepts are resolved at runtime with
 those are install-specific: an id that is correct here would point at a different concept, or
 none, on another server.
 
-**15 of the 121 fields ship with a concept.** Those were each verified against a public
+**44 of the 121 fields carry a concept.** Those were each verified against a public
 source - the CIEL vitals codes against `openmrs-module-referenceapplication`'s own
 `htmlforms/vitals.xml`, and the Glasgow/Karnofsky codes against loinc.org:
 
@@ -558,6 +582,7 @@ source - the CIEL vitals codes against `openmrs-module-referenceapplication`'s o
 | §4 Constantes | temperature, TA systolique/diastolique, pouls, FR, SpO2, poids, taille | `CIEL:5088 5085 5086 5087 5242 5092 5089 5090` |
 | §5 Scores | Glasgow E / V / M / total, Karnofsky | `LOINC:9267-6 9270-0 9268-4 9269-2 89243-0` |
 | §11 Évolution | Glasgow et Karnofsky postopératoires | the **same** codes as §5 |
+| 11 sets | the free-text `notes` field on each | `CIEL:162169` Text of encounter note |
 
 That last row is deliberate: in FHIR a post-operative score is the same `Observation.code` at a
 later `effectiveDateTime`, not a different code.
@@ -571,7 +596,7 @@ append-only, so each version becomes its own dated encounter, which is what make
 "comorbidities as of this admission" query answerable. `getMedicalHistoryVersions` returns them
 all and `getMedicalHistory` delegates to it for the first, so there is still one map-builder.
 
-The remaining **105 fields await curation**, which is a dictionary task rather than a coding
+The remaining **94 fields await curation**, which is a dictionary task rather than a coding
 one: search your loaded CIEL for the clinical label in the field's `name`, then add
 `{"source": "CIEL", "code": "<id>"}` to its `concept` array. The file is packaged in the omod,
 so shipping new codes means rebuilding.
@@ -602,9 +627,26 @@ the neurosurgical diagnosis exports correctly today, with the lesion descriptors
 
 ### What is exportable today, without curation
 
-Four of the sixteen sets: §4 Constantes, §5 Scores, §11 (the two scores only) and §8 Diagnostic.
-Everything else is wired end to end and exports nothing until its concepts are filled in - which
-the coverage report states plainly rather than failing quietly.
+At most four of the sixteen sets - §4 Constantes, §5 Scores, §11 (the two scores only) and §8
+Diagnostic - and **which of those actually export depends on the dictionary loaded on your
+server**, not on this module. A declared code that your dictionary does not carry resolves to
+nothing, and the field is skipped and reported.
+
+Measured against a stock Reference Application (444 concepts, the demo subset), it is
+**thirteen of sixteen** as of 1.4.2: §4 Constantes, whose eight CIEL vitals codes all resolve;
+§8 Diagnostic, which needs no dictionary at all; and the eleven sets carrying a `notes` field,
+which resolves through `CIEL:162169`. Only Motif d'hospitalisation, Antécédents médicaux and
+Anatomopathologie export nothing at all, having neither.
+
+That is thirteen sets exporting *something*, not thirteen sets exporting *fully* - most contribute
+only their note. §5 and §11's scores are declared against LOINC, and a stock install carries only
+11 LOINC mappings, all vitals, so Glasgow and Karnofsky resolve to nothing there. That is not a
+defect in the mapping; those are the correct LOINC codes. It means **full CIEL still has to be
+loaded** before the clinically interesting half of the Fiche can export.
+
+Run the coverage report against your own server rather than trusting this paragraph - it
+distinguishes "no concept declared" from "declared but not resolvable here", which is exactly
+this distinction.
 
 ### The guard against drift
 

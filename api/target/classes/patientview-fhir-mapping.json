@@ -113,37 +113,67 @@
           "id": "diabetes",
           "name": "Diabetes mellitus",
           "type": "boolean",
-          "concept": []
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "119481"
+            }
+          ]
         },
         {
           "id": "hypertension",
           "name": "Hypertension",
-          "type": "boolean",
-          "concept": []
+          "type": "conditionFlag",
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "117399"
+            }
+          ]
         },
         {
           "id": "epilepsy",
           "name": "Epilepsy",
           "type": "boolean",
-          "concept": []
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "155"
+            }
+          ]
         },
         {
           "id": "stroke",
           "name": "Cerebrovascular accident",
-          "type": "boolean",
-          "concept": []
+          "type": "conditionFlag",
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "111103"
+            }
+          ]
         },
         {
           "id": "heartDisease",
           "name": "Heart disease",
           "type": "boolean",
-          "concept": []
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "139071"
+            }
+          ]
         },
         {
           "id": "renalFailure",
           "name": "Renal failure",
-          "type": "boolean",
-          "concept": []
+          "type": "conditionFlag",
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "113338"
+            }
+          ]
         },
         {
           "id": "allergies",
@@ -206,7 +236,12 @@
           "id": "notes",
           "name": "Clinical note",
           "type": "text",
-          "concept": []
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "162169"
+            }
+          ]
         }
       ],
       "excluded": [
@@ -345,6 +380,10 @@
           "type": "numeric",
           "concept": [
             {
+              "source": "CIEL",
+              "code": "160347"
+            },
+            {
               "source": "LOINC",
               "code": "9269-2"
             }
@@ -389,6 +428,10 @@
           "type": "numeric",
           "concept": [
             {
+              "source": "CIEL",
+              "code": "5283"
+            },
+            {
               "source": "LOINC",
               "code": "89243-0"
             }
@@ -398,7 +441,12 @@
           "id": "notes",
           "name": "Clinical note",
           "type": "text",
-          "concept": []
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "162169"
+            }
+          ]
         }
       ],
       "excluded": [
@@ -508,20 +556,35 @@
         {
           "id": "headache",
           "name": "Headache",
-          "type": "boolean",
-          "concept": []
+          "type": "conditionFlag",
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "139084"
+            }
+          ]
         },
         {
           "id": "vomiting",
           "name": "Vomiting",
           "type": "boolean",
-          "concept": []
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "122983"
+            }
+          ]
         },
         {
           "id": "visualDisturbances",
           "name": "Visual disturbance",
-          "type": "boolean",
-          "concept": []
+          "type": "conditionFlag",
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "123074"
+            }
+          ]
         },
         {
           "id": "sphincterDisturbances",
@@ -533,7 +596,12 @@
           "id": "notes",
           "name": "Clinical note",
           "type": "text",
-          "concept": []
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "162169"
+            }
+          ]
         }
       ],
       "excluded": [
@@ -566,7 +634,12 @@
           "id": "notes",
           "name": "Clinical note",
           "type": "text",
-          "concept": []
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "162169"
+            }
+          ]
         }
       ],
       "excluded": [
@@ -633,7 +706,12 @@
           "id": "notes",
           "name": "Clinical note",
           "type": "text",
-          "concept": []
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "162169"
+            }
+          ]
         }
       ],
       "excluded": [
@@ -721,7 +799,12 @@
           "id": "antibiotics",
           "name": "Antibiotic therapy",
           "type": "boolean",
-          "concept": []
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "164174"
+            }
+          ]
         },
         {
           "id": "anticoagulants",
@@ -745,7 +828,12 @@
           "id": "notes",
           "name": "Clinical note",
           "type": "text",
-          "concept": []
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "162169"
+            }
+          ]
         }
       ],
       "excluded": [
@@ -808,7 +896,12 @@
           "id": "notes",
           "name": "Clinical note",
           "type": "text",
-          "concept": []
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "162169"
+            }
+          ]
         }
       ],
       "excluded": [
@@ -880,6 +973,10 @@
           "type": "numeric",
           "concept": [
             {
+              "source": "CIEL",
+              "code": "160347"
+            },
+            {
               "source": "LOINC",
               "code": "9269-2"
             }
@@ -890,6 +987,10 @@
           "name": "Karnofsky Performance Status score",
           "type": "numeric",
           "concept": [
+            {
+              "source": "CIEL",
+              "code": "5283"
+            },
             {
               "source": "LOINC",
               "code": "89243-0"
@@ -905,8 +1006,13 @@
         {
           "id": "infection",
           "name": "Postoperative infection",
-          "type": "boolean",
-          "concept": []
+          "type": "conditionFlag",
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "129346"
+            }
+          ]
         },
         {
           "id": "hemorrhage",
@@ -917,14 +1023,24 @@
         {
           "id": "hydrocephalus",
           "name": "Hydrocephalus",
-          "type": "boolean",
-          "concept": []
+          "type": "conditionFlag",
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "117470"
+            }
+          ]
         },
         {
           "id": "csfLeak",
           "name": "Cerebrospinal fluid leak",
-          "type": "boolean",
-          "concept": []
+          "type": "conditionFlag",
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "155486"
+            }
+          ]
         },
         {
           "id": "seizures",
@@ -942,13 +1058,23 @@
           "id": "deathDate",
           "name": "Date of death",
           "type": "date",
-          "concept": []
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "1543"
+            }
+          ]
         },
         {
           "id": "notes",
           "name": "Clinical note",
           "type": "text",
-          "concept": []
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "162169"
+            }
+          ]
         }
       ],
       "excluded": [
@@ -980,14 +1106,24 @@
         {
           "id": "aphasia",
           "name": "Aphasia",
-          "type": "boolean",
-          "concept": []
+          "type": "conditionFlag",
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "121529"
+            }
+          ]
         },
         {
           "id": "cognitiveDisorders",
           "name": "Cognitive impairment",
           "type": "boolean",
-          "concept": []
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "110434"
+            }
+          ]
         },
         {
           "id": "secondaryEpilepsy",
@@ -1005,7 +1141,12 @@
           "id": "notes",
           "name": "Clinical note",
           "type": "text",
-          "concept": []
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "162169"
+            }
+          ]
         }
       ],
       "excluded": [
@@ -1032,7 +1173,12 @@
           "id": "notes",
           "name": "Clinical note",
           "type": "text",
-          "concept": []
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "162169"
+            }
+          ]
         }
       ],
       "excluded": [
@@ -1075,7 +1221,12 @@
           "id": "recurrence",
           "name": "Disease recurrence",
           "type": "boolean",
-          "concept": []
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "1688"
+            }
+          ]
         },
         {
           "id": "currentTreatment",
@@ -1087,13 +1238,23 @@
           "id": "nextConsultationDate",
           "name": "Date of next appointment",
           "type": "date",
-          "concept": []
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "5096"
+            }
+          ]
         },
         {
           "id": "notes",
           "name": "Clinical note",
           "type": "text",
-          "concept": []
+          "concept": [
+            {
+              "source": "CIEL",
+              "code": "162169"
+            }
+          ]
         }
       ],
       "excluded": [

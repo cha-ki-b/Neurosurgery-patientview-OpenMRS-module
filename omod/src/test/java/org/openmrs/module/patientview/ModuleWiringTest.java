@@ -341,4 +341,43 @@ public class ModuleWiringTest {
         assertTrue("patientHeader.gsp is a fragment and should read its parameters from \"config\"",
                 patientHeader.contains("config."));
     }
+    @Test
+    public void everyJavascriptFileMustParse() throws Exception {
+        // A syntax error anywhere in a .js file makes the WHOLE file fail to load, so every
+        // function in it becomes undefined - not just the broken one. That is exactly what
+        // happened in 1.4.0: an unescaped apostrophe in one error message
+        // ('Erreur lors de l'export') silently disabled every "+ Ajouter" form in the module,
+        // and shipped through three releases, because the build checked XML, JSON and GSP
+        // braces but never JavaScript.
+        //
+        // Nashorn is used in ES6 mode because patientview.js uses const. It was removed in
+        // JDK 15, so this skips rather than fails when the engine is absent - the module is
+        // expected to move to a newer JDK for FHIR2 4.x, and a guard that breaks that
+        // migration would be worse than no guard.
+        System.setProperty("nashorn.args", "--language=es6");
+        javax.script.ScriptEngine engine =
+                new javax.script.ScriptEngineManager().getEngineByName("nashorn");
+        org.junit.Assume.assumeNotNull(engine);
+
+        File scriptDir = new File("src/main/webapp/resources/scripts");
+        assertTrue("script directory not found: " + scriptDir.getAbsolutePath(),
+                scriptDir.isDirectory());
+        File[] scripts = scriptDir.listFiles(new java.io.FilenameFilter() {
+            public boolean accept(File dir, String name) {
+                return name.endsWith(".js");
+            }
+        });
+        assertNotNull("script directory should be readable", scripts);
+        assertTrue("expected to find the module's .js files", scripts.length > 0);
+
+        for (File script : scripts) {
+            String source = new String(java.nio.file.Files.readAllBytes(script.toPath()), "UTF-8");
+            try {
+                ((javax.script.Compilable) engine).compile(source);
+            } catch (javax.script.ScriptException e) {
+                org.junit.Assert.fail(script.getName() + " is not valid JavaScript, so every function it defines "
+                        + "will be undefined in the browser: " + e.getMessage());
+            }
+        }
+    }
 }

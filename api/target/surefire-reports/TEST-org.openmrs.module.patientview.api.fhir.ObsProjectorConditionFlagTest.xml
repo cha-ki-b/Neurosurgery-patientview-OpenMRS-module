@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="org.openmrs.module.patientview.api.PatientviewServiceImplConnectionTest" time="1.73" tests="24" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="org.openmrs.module.patientview.api.fhir.ObsProjectorConditionFlagTest" time="1.159" tests="4" errors="0" skipped="0" failures="0">
   <properties>
     <property name="sun.desktop" value="windows"/>
     <property name="awt.toolkit" value="sun.awt.windows.WToolkit"/>
@@ -43,6 +43,7 @@
     <property name="java.endorsed.dirs" value="C:\Program Files\Eclipse Adoptium\jdk-8.0.492.9-hotspot\jre\lib\endorsed"/>
     <property name="java.runtime.name" value="OpenJDK Runtime Environment"/>
     <property name="file.encoding" value="Cp1252"/>
+    <property name="OPENMRS_APPLICATION_DATA_DIRECTORY" value="C:\Users\belam\AppData\Local\Temp\appdir-for-unit-tests-8430563354846196442"/>
     <property name="java.vm.name" value="OpenJDK 64-Bit Server VM"/>
     <property name="localRepository" value="C:\Users\belam\.m2\repository"/>
     <property name="java.vendor.url.bug" value="https://github.com/adoptium/adoptium-support/issues"/>
@@ -62,28 +63,8 @@
     <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
     <property name="java.class.version" value="52.0"/>
   </properties>
-  <testcase name="shouldPersistAndReloadAssessment" classname="org.openmrs.module.patientview.api.PatientviewServiceImplConnectionTest" time="0.82"/>
-  <testcase name="testSaveMethodValidation" classname="org.openmrs.module.patientview.api.PatientviewServiceImplConnectionTest" time="0.008"/>
-  <testcase name="projectionMethodsShouldBeInertWhenNoProjectorIsWired" classname="org.openmrs.module.patientview.api.PatientviewServiceImplConnectionTest" time="0.002"/>
-  <testcase name="phase1SavesShouldRejectNullPatientOrData" classname="org.openmrs.module.patientview.api.PatientviewServiceImplConnectionTest" time="0.008"/>
-  <testcase name="primaryDiagnosisShouldComeFromLatestAdmissionContext" classname="org.openmrs.module.patientview.api.PatientviewServiceImplConnectionTest" time="0.002"/>
-  <testcase name="testLoggingConfiguration" classname="org.openmrs.module.patientview.api.PatientviewServiceImplConnectionTest" time="0.001"/>
-  <testcase name="testNullPatientHandling" classname="org.openmrs.module.patientview.api.PatientviewServiceImplConnectionTest" time="0.002"/>
-  <testcase name="phase3SavesShouldDelegateToDao" classname="org.openmrs.module.patientview.api.PatientviewServiceImplConnectionTest" time="0.028"/>
-  <testcase name="testTransactionAnnotations" classname="org.openmrs.module.patientview.api.PatientviewServiceImplConnectionTest" time="0.003"/>
-  <testcase name="activeAlertsShouldFlagLowGlasgowScore" classname="org.openmrs.module.patientview.api.PatientviewServiceImplConnectionTest" time="0.002"/>
-  <testcase name="projectingANullPatientShouldNotTouchTheDao" classname="org.openmrs.module.patientview.api.PatientviewServiceImplConnectionTest" time="0.004"/>
-  <testcase name="imagingStudiesShouldDegradeToAnEmptyListWhenTheImagingModuleIsAbsent" classname="org.openmrs.module.patientview.api.PatientviewServiceImplConnectionTest" time="0.019"/>
-  <testcase name="testBasicMethodsWithValidPatient" classname="org.openmrs.module.patientview.api.PatientviewServiceImplConnectionTest" time="0.003"/>
-  <testcase name="testDaoInjection" classname="org.openmrs.module.patientview.api.PatientviewServiceImplConnectionTest" time="0.001"/>
-  <testcase name="activeAlertsShouldBeEmptyWhenGlasgowIsNormal" classname="org.openmrs.module.patientview.api.PatientviewServiceImplConnectionTest" time="0.002"/>
-  <testcase name="shouldDelegatePhase1SavesToDao" classname="org.openmrs.module.patientview.api.PatientviewServiceImplConnectionTest" time="0.006"/>
-  <testcase name="testServiceInitialization" classname="org.openmrs.module.patientview.api.PatientviewServiceImplConnectionTest" time="0.001"/>
-  <testcase name="testServiceWithoutDaoFailure" classname="org.openmrs.module.patientview.api.PatientviewServiceImplConnectionTest" time="0.001"/>
-  <testcase name="primaryDiagnosisShouldPreferFormalDiagnosisOverAdmissionContextImpression" classname="org.openmrs.module.patientview.api.PatientviewServiceImplConnectionTest" time="0.002"/>
-  <testcase name="testStaticDataMethods" classname="org.openmrs.module.patientview.api.PatientviewServiceImplConnectionTest" time="0.002"/>
-  <testcase name="primaryDiagnosisShouldFallBackWhenNoAdmissionContextRecorded" classname="org.openmrs.module.patientview.api.PatientviewServiceImplConnectionTest" time="0.002"/>
-  <testcase name="phase3GettersShouldReturnEmptyResultsForNullPatientWithoutTouchingDao" classname="org.openmrs.module.patientview.api.PatientviewServiceImplConnectionTest" time="0.002"/>
-  <testcase name="phase1GettersShouldReturnEmptyResultsForNullPatientWithoutTouchingDao" classname="org.openmrs.module.patientview.api.PatientviewServiceImplConnectionTest" time="0.001"/>
-  <testcase name="phase3SavesShouldRejectNullPatientOrData" classname="org.openmrs.module.patientview.api.PatientviewServiceImplConnectionTest" time="0.006"/>
+  <testcase name="aFalseFlagExportsNothingAtAll" classname="org.openmrs.module.patientview.api.fhir.ObsProjectorConditionFlagTest" time="1.135"/>
+  <testcase name="anUnresolvableConceptIsReportedNotThrown" classname="org.openmrs.module.patientview.api.fhir.ObsProjectorConditionFlagTest" time="0.005"/>
+  <testcase name="aTrueFlagBecomesACodedCondition" classname="org.openmrs.module.patientview.api.fhir.ObsProjectorConditionFlagTest" time="0.006"/>
+  <testcase name="severalFlagsOnOneRowBecomeSeveralConditions" classname="org.openmrs.module.patientview.api.fhir.ObsProjectorConditionFlagTest" time="0.01"/>
 </testsuite>
