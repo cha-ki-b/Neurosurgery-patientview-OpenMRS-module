@@ -285,15 +285,19 @@ credentials moved from hardcoded YAML into a `.env` file. These files update the
 ## 11. Known limitations / roadmap
 
 - All ten tabs are built (§2); the Fiche de Neurochirurgie is fully covered.
-- **105 of the 120 concept-backed fields have no concept yet** (§15). The export machinery is
-  complete and tested. Thirteen of the sixteen sets export *something* on a stock dictionary
-  since 1.4.2, but for most of them that is only their free-text note: the Glasgow and Karnofsky
-  scores still resolve to nothing, because a demo install carries 444 concepts and no Glasgow or
-  Karnofsky at all (§15). This is dictionary work needing a clinician and a
-  CIEL curator, not a developer - and `tools/ciel_match.py` turns it from 105 manual searches
-  into reviewing a pre-filled table. OCL disabled anonymous API access, so the codes have to be
-  resolved against the dictionary as loaded on your own server; that script does exactly that
-  without needing a Python database driver.
+- **76 of the 120 concept-backed fields have no concept yet** (§15.7). The export machinery is
+  complete and tested; 44 fields and 14 of the 16 sets export today. What is left is dictionary
+  work needing a clinician and a CIEL curator, not a developer, and `tools/ciel_match.py` turns
+  it into reviewing a pre-filled table. Of the remainder, roughly a third are narrative free text
+  with no natural coded equivalent, so a realistic ceiling is well short of 120.
+- **The OCL subscription cannot work with the bundled `openconceptlab` 1.2.9** - its 2007-era
+  HTTP client cannot authenticate to current OCL, and the import fails with a 403 whose body
+  reads "Anonymous API access is disabled" even with a valid token. CIEL has to be loaded from an
+  offline export instead, and future dictionary updates need that same manual refresh until the
+  module is upgraded (§15.8).
+- **`concept.true` / `concept.false` must be configured** or every coded boolean is silently
+  skipped. They were unset on this installation - an OpenMRS-wide gap, not specific to this
+  module (§15.9).
 - The lab panels (NFS, ionogramme, coagulation) and CRP/glycémie/créatinine are stored as
   text by this module, so mapping them to CIEL's *numeric* concepts will be reported as a
   datatype mismatch rather than silently coerced. Either map them to text-datatype concepts
@@ -512,166 +516,301 @@ the real not-installed path rather than a mock of it.
 reachable Orthanc; and its study sync has run (patientview only reads what `imaging` has
 already synced - it never triggers a fetch itself).
 
-## 15. Exposing the record through FHIR (1.4.0)
+## 15. Exposing the record through FHIR
 
-The FHIR2 module serves FHIR resources out of the **core** OpenMRS schema: its data-access
-layer queries `obs`, `encounter`, `conditions` and friends directly, and it documents no way
-for another module to register a resource provider or contribute rows from its own tables.
-patientview's sixteen `patientview_*` tables were therefore invisible to it - which is the
-actual reason nothing was exported before 1.4.0, and no amount of adapter code in either
-module would have changed it.
+Everything this module collects is also written into the core OpenMRS clinical model, where the
+FHIR2 module serves it as standard FHIR resources. This section explains why it is built that
+way, what comes out, and what you have to do to get the rest of it out.
 
-So this release does not integrate with FHIR2 at all. It makes the data reachable through the
-core clinical model, and lets FHIR2 do its own job:
+### 15.1 Why the data had to move, not the code
+
+FHIR2 serves resources out of the **core** schema. Its data-access layer queries `obs`,
+`encounter` and `conditions` directly, and it documents no supported way for another module to
+register a resource provider or contribute rows from its own tables.
+
+So patientview's sixteen `patientview_*` tables were invisible to it, and no adapter written in
+either module could have changed that. The question was never *where should the FHIR code live*
+but *does this data enter the model FHIR2 reads at all* - and it did not.
+
+The fix is therefore not an integration. Records keep being saved exactly as before, and a
+projector additionally writes them into the core model:
 
 ```
-saveXxx()  ->  patientview_* row (unchanged, still the system of record for the UI)
-           ->  ObsProjector      ->  Encounter + Obs        ->  FHIR2 serves Observation
-                                 ->  Condition (section 8)  ->  FHIR2 serves Condition
+saveXxx()  ->  patientview_* row      (unchanged - still what the module's own screens read)
+           ->  ObsProjector  ->  Encounter + Obs   ->  FHIR2 serves Observation
+                             ->  Condition         ->  FHIR2 serves Condition
 ```
 
-**`ObsProjector` contains no reference to FHIR2, deliberately.** It calls only
-`ConceptService`, `EncounterService`, `ConditionService` and the encounter's obs cascade - core
-platform APIs, stable across the whole 2.x line. That indirection is the forward-compatibility
-story: across FHIR2's major versions the one thing that has broken downstream modules is its
-**DAO layer** (2.x → 3.x replaced the Hibernate `Criteria` object with
-`OpenmrsFhirCriteriaContext`, and the core team's guidance is that modules which "leveraged the
-FHIR2 DAO API classes to implement their own DAOs will be impacted"; 3.x is otherwise
-"basically backwards compatible"). Nothing here touches that layer, so an upgrade to FHIR2 4.x
-is a no-op for this module. **Do not add an fhir2 dependency to either `pom.xml`** - it would
-throw that property away, and `FhirMappingManifestTest` is not a substitute for the discipline.
+**`ObsProjector` contains no reference to FHIR2, deliberately.** It calls only `ConceptService`,
+`EncounterService`, `ConditionService` and the encounter's obs cascade - core platform APIs,
+stable across the whole 2.x line.
 
-### Idempotent because the module is append-only
+That indirection is the forward-compatibility story. Across FHIR2's major versions the one thing
+that has broken downstream modules is its **DAO layer**: 2.x to 3.x replaced the Hibernate
+`Criteria` object with `OpenmrsFhirCriteriaContext`, and the core team's guidance is that modules
+which "leveraged the FHIR2 DAO API classes to implement their own DAOs will be impacted", while
+3.x is otherwise "basically backwards compatible". Nothing here touches that layer, so upgrading
+FHIR2 is a no-op for this module - which was confirmed in practice when this instance moved from
+fhir2 1.2.2 to 1.6.0 mid-development and nothing needed changing.
 
-Every entity here is insert-only, so *"project the rows that are not in the ledger yet"* is a
-complete description of the work. That single property buys a lot:
+**Do not add an fhir2 dependency to either `pom.xml`.** It would throw that property away. A
+static check in `ModuleWiringTest` fails the build if one ever appears.
+
+### 15.2 The three ways a field can be exported
+
+Which one a field uses is declared by its `type` in the mapping manifest.
+
+| Manifest `type` | Becomes | Used for |
+| --- | --- | --- |
+| `numeric` `text` `date` `boolean` | an `Obs` on the encounter | measurements, scores, narrative, yes/no answers |
+| `conditionFlag` | a `Condition` with a **coded** diagnosis | comorbidities and complications |
+| `condition` | a `Condition` with **free text** | the section 8 neurosurgical diagnosis |
+
+`conditionFlag` exists because of a real modelling mistake found during curation. CIEL carries
+comorbidities and complications - hypertension, hydrocephalus, CSF leak - as **Diagnosis-class
+concepts with datatype `N/A`**. No observation can hold a value of that datatype, so every one of
+those fields was being reported as a datatype mismatch and exported nothing. The concept was
+right all along; representing "this patient has hydrocephalus" as an observation was wrong.
+A Condition is both the only thing that works and the correct FHIR modelling.
+
+Two rules the projector applies, and the reasoning matters more than the code:
+
+- **A false boolean exports nothing.** The forms cannot distinguish "no" from "not assessed", so
+  asserting a negative would invent a clinical finding nobody recorded.
+- **A datatype mismatch is reported, never coerced.** `"0.95 g/L"` and `"95 mg/dL"` are the same
+  glucose; a parser guessing units in a neurosurgery record is a safety bug, not a convenience.
+
+Section 8 needs no dictionary at all: OpenMRS `Condition` accepts free text through
+`CodedOrFreeText.setNonCoded`, which FHIR2 renders as `Condition.code.text`. The lesion
+descriptors are folded into `Condition.additionalDetail`.
+
+### 15.3 The ledger: exported once, re-exported when the mapping changes
+
+`patientview_fhir_projection` records, per source row, which encounter it produced and a
+**fingerprint of the mapping it was projected with**.
+
+Because every patientview entity is append-only, *"project the rows whose fingerprint is not
+current"* completely describes the work. That single property buys a lot:
 
 - the live path (after a save) and the backfill of historical rows are the **same operation**;
-- re-running either is safe, so the "Export FHIR" button and the server-wide backfill cannot
-  double-write;
-- it is self-healing - a row whose export was skipped for want of a concept is retried the next
-  time anything for that patient is saved, or on the next backfill;
-- ordering is irrelevant, so a back-dated record is picked up as reliably as the newest one.
+- re-running either is safe, so the "Export FHIR" button cannot double-write;
+- ordering is irrelevant - a back-dated record is picked up as reliably as the newest;
+- **curating a concept later re-exports the rows it affects, automatically.**
 
-The ledger is `patientview_fhir_projection` (source set, source row uuid, encounter uuid), with
-a unique index on `(source_set, source_uuid)` so the guarantee is enforced by the database and
-not only by the code that checks before inserting. Every DAO getter now also returns the row's
-`uuid`, which is what the ledger keys on.
+That last point was a genuine design gap until 1.4.5. The ledger used to record only *that* a row
+was done, so a row projected before its concept existed kept whatever little it had managed to
+export - forever. Working around it meant voiding the encounter and clearing the ledger by hand.
 
-### Transaction propagation, which is load-bearing
+The fingerprint is a SHA-256 digest over each field's id, type and ordered concept references,
+plus the group concept and date key: everything that changes what a projection would produce, and
+nothing else. Editing a label or a comment leaves it identical, so cosmetic manifest edits do not
+churn every record in the database.
 
-`projectSet` runs `REQUIRED` - in the **caller's** transaction - because it runs straight after
-a save and must see the row that save just wrote. An earlier draft of this used `REQUIRES_NEW`
-for isolation; that suspends the caller's transaction, leaves the new row invisible, and
-silently pushes every projection one save behind forever. `projectPatient` *does* take
-`REQUIRES_NEW`, because it only reads already-committed rows and the server-wide backfill needs
-one patient's failure not to abandon the sweep. See `moduleApplicationContext.xml`.
+When a fingerprint has moved, the previous output is **superseded**: voided, not deleted, so the
+void reason preserves the audit trail. Conditions are voided explicitly, because `voidEncounter`
+cascades only to observations and would otherwise leave them behind as duplicates of the ones the
+re-projection is about to create.
 
-A dictionary gap can never fail a clinical save: every reason a field might not be exportable -
-no concept curated, a declared concept that does not resolve here, a datatype disagreement, a
-coded boolean with no `concept.true` configured - is checked *before* any obs is built, and
-reported instead of thrown.
+`manifest_fingerprint` is nullable and **null counts as stale**, so upgrading to 1.4.5 re-exports
+every pre-existing row once, picking up all curation done to date.
 
-### Concepts: CIEL, by mapping, never by id
+### 15.4 Transaction propagation, which is load-bearing
 
-`api/src/main/resources/patientview-fhir-mapping.json` declares all 16 sets and 121 projectable
-fields. Concepts are resolved at runtime with
-`ConceptService.getConceptByMapping(code, source)` - **never by numeric `concept_id`**, because
-those are install-specific: an id that is correct here would point at a different concept, or
-none, on another server.
+`projectSet` runs `REQUIRED` - in the **caller's** transaction - because it runs straight after a
+save and must see the row that save just wrote. An earlier draft used `REQUIRES_NEW` for
+isolation; that suspends the caller's transaction, leaves the new row invisible, and silently
+pushes every projection one save behind, permanently.
 
-**44 of the 121 fields carry a concept.** Those were each verified against a public
-source - the CIEL vitals codes against `openmrs-module-referenceapplication`'s own
-`htmlforms/vitals.xml`, and the Glasgow/Karnofsky codes against loinc.org:
+`projectPatient` *does* take `REQUIRES_NEW`: it reads only committed rows, and a server-wide
+backfill must not let one patient's failure abort the sweep. See `moduleApplicationContext.xml`.
+
+**A dictionary gap can never fail a clinical save.** Every reason a field might not be exportable
+- no concept curated, a code that does not resolve here, a datatype disagreement, a coded boolean
+with no `concept.true` configured - is checked *before* any obs is built, and reported instead of
+thrown.
+
+### 15.5 Concepts are referenced by mapping, never by id
+
+`api/src/main/resources/patientview-fhir-mapping.json` declares all 16 sets and 121 fields.
+Concepts resolve at runtime through `ConceptService.getConceptByMapping(code, source)` -
+**never by numeric `concept_id`**, because those are install-specific: an id correct on one
+server points at a different concept, or none, on the next.
+
+Each field's `concept` is an **ordered list**, and the first that resolves wins. That is how one
+build works on dictionaries that differ:
+
+```json
+{ "id": "gcs", "name": "Glasgow coma score total", "type": "numeric",
+  "concept": [ { "source": "CIEL",  "code": "160347" },
+               { "source": "LOINC", "code": "9269-2" } ] }
+```
+
+It is also how a **local dictionary** fits in, for the fields CIEL does not carry: declare the
+standard code first and your own second. Two caveats worth knowing before you start. A local code
+makes the data FHIR-*shaped*, not FHIR-*interoperable* - any client can read it, nothing outside
+your hospital knows what it means. And observations are append-only, so rows exported today
+against a local code keep it forever; adding CIEL later changes only new rows. Prefer loading
+CIEL first and using local concepts only for the genuine residue.
+
+### 15.6 Curation status
+
+**44 of the 120 concept-backed fields carry a concept** (a 121st, the section 8 diagnosis, needs
+none). Every code was verified against the loaded dictionary or a public source before being
+committed:
 
 | Fiche | Fields | Codes |
 | --- | --- | --- |
 | §4 Constantes | temperature, TA systolique/diastolique, pouls, FR, SpO2, poids, taille | `CIEL:5088 5085 5086 5087 5242 5092 5089 5090` |
-| §5 Scores | Glasgow E / V / M / total, Karnofsky | `LOINC:9267-6 9270-0 9268-4 9269-2 89243-0` |
+| §5 Scores | Glasgow total, Karnofsky | `CIEL:160347` `CIEL:5283`, then LOINC |
 | §11 Évolution | Glasgow et Karnofsky postopératoires | the **same** codes as §5 |
 | 11 sets | the free-text `notes` field on each | `CIEL:162169` Text of encounter note |
+| 9 fields | comorbidities and complications, as `conditionFlag` | `CIEL:117399 111103 113338 139084 123074 129346 117470 155486 121529` |
 
-That last row is deliberate: in FHIR a post-operative score is the same `Observation.code` at a
-later `effectiveDateTime`, not a different code.
+Reusing the §5 codes for §11 is deliberate: in FHIR a post-operative score is the same
+`Observation.code` at a later `effectiveDateTime`, not a different code.
 
-`bmi` is deliberately **not** projected - the reference application's vitals form stores no
-concept for it either, because it is derived from height and weight and FHIR consumers
-recompute it.
+Three things are deliberately **not** exported:
 
-Medical history exports **every** recorded version, not just the current one: the table is
-append-only, so each version becomes its own dated encounter, which is what makes a
-"comorbidities as of this admission" query answerable. `getMedicalHistoryVersions` returns them
-all and `getMedicalHistory` delegates to it for the first, so there is still one map-builder.
+- `bmi` - derived from height and weight. The reference application's own vitals form stores no
+  concept for it either, and FHIR consumers recompute it.
+- Glasgow **eye / verbal / motor** components - CIEL models GCS as a single total and has no
+  component concepts, so these have no standard equivalent anywhere. They are the concrete case
+  for a local dictionary (§15.5).
+- `deceased` - death is a patient *status* (`Patient.deceasedBoolean` in FHIR), not a condition.
 
-The remaining **94 fields await curation**, which is a dictionary task rather than a coding
-one: search your loaded CIEL for the clinical label in the field's `name`, then add
-`{"source": "CIEL", "code": "<id>"}` to its `concept` array. The file is packaged in the omod,
-so shipping new codes means rebuilding.
+Medical history exports **every** recorded version, not only the current one: the table is
+append-only, so each version becomes its own dated encounter, which is what makes "comorbidities
+as of this admission" answerable.
 
-Do not do that by hand. **`tools/ciel_match.py`** exists to make curation routine: `sql` mode
-emits one query that searches your dictionary for every uncurated label at once - matching on
-any synonym, since that is where a clinician's wording usually lands, while reporting the fully
-specified name so the reviewer sees what the concept really is - and `apply` mode reads the
-approved rows back into the manifest. It needs no Python database driver: you run the SQL
-through `docker exec`, so it works against a running container or a restored dump. It refuses
-to apply if more than one candidate is still present for a field, and warns when a candidate's
-datatype cannot hold the field's value, which catches a mismatch during review rather than
-after a rebuild. A name match is a suggestion, not a decision - a clinician makes the review
-pass.
+### 15.7 Curating the rest
 
-Ask the running server what is left:
+The remaining **76 fields** are a dictionary task, not a coding one. Do not do it by hand.
 
-```
-GET  /openmrs/ws/rest/../module/patientview/fhirProjection.form   # coverage report
-POST /module/patientview/fhirProjection.form?patientId=123        # backfill one patient
-POST /module/patientview/fhirProjection.form?allPatients=true     # backfill everything
+**`tools/ciel_match.py`** turns it into a review pass:
+
+```bash
+python tools/ciel_match.py sql > candidates.sql          # one query for every uncurated label
+docker exec -i openmrs-mysql mysql -uopenmrs -p openmrs -N < candidates.sql > candidates.tsv
+#   open candidates.tsv, KEEP AT MOST ONE ROW PER FIELD, delete the rest
+python tools/ciel_match.py apply candidates.tsv          # writes the approved codes back
 ```
 
-Section 8 is the exception that needs no dictionary at all: OpenMRS `Condition` accepts free
-text through `CodedOrFreeText.setNonCoded`, and FHIR2 renders that as `Condition.code.text`. So
-the neurosurgical diagnosis exports correctly today, with the lesion descriptors folded into
-`Condition.additionalDetail`.
+It needs no Python database driver - the SQL runs through `docker exec`, so it works against a
+running container or a restored dump. It refuses to apply while two candidates remain for a
+field, and warns when a candidate's datatype cannot hold the field's value.
 
-### What is exportable today, without curation
+**A clinician must make the review pass.** This is not a formality. Run against a real CIEL, the
+tool's loose-match tier suggested *Psyllium* - a laxative - for both `corticosteroids` and
+`analgesics`, *disomnia* (a sleep disorder) for `sphincterDisturbances`, and *hemobilia* for
+`hemorrhage`. The tool applies nothing on its own, for exactly this reason.
 
-At most four of the sixteen sets - §4 Constantes, §5 Scores, §11 (the two scores only) and §8
-Diagnostic - and **which of those actually export depends on the dictionary loaded on your
-server**, not on this module. A declared code that your dictionary does not carry resolves to
-nothing, and the field is skipped and reported.
+Then rebuild, redeploy, and press **Export FHIR** once: §15.3 means the affected rows re-export
+themselves.
 
-Measured against a stock Reference Application (444 concepts, the demo subset), it is
-**thirteen of sixteen** as of 1.4.2: §4 Constantes, whose eight CIEL vitals codes all resolve;
-§8 Diagnostic, which needs no dictionary at all; and the eleven sets carrying a `notes` field,
-which resolves through `CIEL:162169`. Only Motif d'hospitalisation, Antécédents médicaux and
-Anatomopathologie export nothing at all, having neither.
+### 15.8 Loading CIEL
 
-That is thirteen sets exporting *something*, not thirteen sets exporting *fully* - most contribute
-only their note. §5 and §11's scores are declared against LOINC, and a stock install carries only
-11 LOINC mappings, all vitals, so Glasgow and Karnofsky resolve to nothing there. That is not a
-defect in the mapping; those are the correct LOINC codes. It means **full CIEL still has to be
-loaded** before the clinically interesting half of the Fiche can export.
+A stock Reference Application carries about 444 concepts - a demo subset with no neurosurgical
+vocabulary at all, and no Glasgow or Karnofsky by any name. Full CIEL is roughly 50,000. Check
+what you have before curating anything:
 
-Run the coverage report against your own server rather than trusting this paragraph - it
-distinguishes "no concept declared" from "declared but not resolvable here", which is exactly
-this distinction.
+```bash
+docker exec openmrs-mysql sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" openmrs -N -e "
+  SELECT (SELECT COUNT(*) FROM concept WHERE retired=0), crs.name, COUNT(*)
+  FROM concept_reference_map crm
+  JOIN concept_reference_term crt USING (concept_reference_term_id)
+  JOIN concept_reference_source crs USING (concept_source_id)
+  GROUP BY crs.name ORDER BY 3 DESC LIMIT 5"'
+```
 
-### The guard against drift
+**The OCL subscription does not work with the bundled `openconceptlab` 1.2.9.** Its HTTP client
+(commons-httpclient 3.1, from 2007) cannot get its credentials onto the wire against current OCL:
+the import fails after three seconds with `HTTP/1.1 403 Forbidden`, and OCL's body says
+`"Authentication required. Anonymous API access is disabled."` - it saw the request as anonymous.
+The token is not the problem; the same token and URL return `HTTP 200` from `curl` inside the
+same container.
 
-`FhirMappingManifestTest` (in `api`, no OpenMRS context) checks the manifest against the code
-in both directions, because a string-keyed manifest drifts silently:
+Use the **offline load** instead, which needs no authentication from the module at all:
+
+```bash
+# 1. Fetch the export with your own OCL token. The API redirects to a pre-signed S3 URL, and
+#    the Authorization header must NOT be forwarded to S3 or it returns 403.
+LOC=$(curl -s -i -H "Authorization: Token $OCL_TOKEN"   "https://api.openconceptlab.org/orgs/CIEL/sources/CIEL/v2026-08-24/export/"   | grep -i "^location:" | sed "s/^[Ll]ocation: //" | tr -d "
+")
+curl -o ciel.zip "$LOC"
+
+# 2. Drop it in the module's load-at-startup folder and restart.
+docker cp ciel.zip openmrs-app:/usr/local/tomcat/.OpenMRS/ocl/configuration/loadAtStartup/
+docker restart openmrs-app
+```
+
+Set `openconceptlab.validationType` to `NONE` for a bulk load first. `FULL` re-validates all
+50,000 concepts against OpenMRS rules and fails on forward references - concept A citing concept
+B not yet imported. CIEL is already validated upstream.
+
+Expect the import to take tens of minutes, and expect the startup that triggers it to be slow.
+
+**Consequence worth planning for:** future CIEL updates need this same manual refresh, unless the
+`openconceptlab` module is upgraded to a version that can authenticate.
+
+### 15.9 Server configuration this depends on
+
+Two things live outside the module and will silently reduce what it exports if they are missing.
+The coverage report (§15.10) tells you about both.
+
+- **`concept.true` / `concept.false`** must point at concepts, or every coded boolean is skipped.
+  They were unset on this installation, which meant *no* coded boolean anywhere in OpenMRS could
+  record a positive value. Set to `1065` / `1066` (Yes / No) per CIEL convention rather than
+  `1` / `2` (True / False).
+- **The `Neurosurgery Fiche` encounter type** is created by the module's activator on startup,
+  looked up by a fixed uuid so a restart never creates a second one. If it is missing, nothing
+  can be exported, because there is nothing to hang an encounter on.
+
+### 15.10 Operating it
+
+Records export automatically as they are saved. These endpoints cover what automation does not -
+backfilling rows created before the export existed, and re-running after curation:
+
+```
+GET  /module/patientview/fhirProjection.form                  # coverage report
+POST /module/patientview/fhirProjection.form?patientId=123    # one patient
+POST /module/patientview/fhirProjection.form?allPatients=true # everything
+```
+
+The **coverage report** is the thing to trust over any number in this file, because it measures
+your server rather than describing this one. It distinguishes "no concept declared" from
+"declared but not resolvable here" - the difference between work still to do and a dictionary
+that lacks a code you already chose.
+
+There is also an **Export FHIR** button on the Résumé tab, which runs the per-patient export.
+
+To confirm data is really reaching FHIR, read it back:
+
+```bash
+curl -u admin:PASSWORD "http://localhost:8080/openmrs/ws/fhir2/R4/Observation?patient=PATIENT_UUID"
+curl -u admin:PASSWORD "http://localhost:8080/openmrs/ws/fhir2/R4/Condition?patient=PATIENT_UUID"
+```
+
+### 15.11 The guards against drift
+
+A string-keyed manifest drifts silently, so `FhirMappingManifestTest` (in `api`, no OpenMRS
+context needed) checks it against the code in both directions:
 
 - every declared field is a key its named DAO getter really produces, **and** every key that
-  getter produces is either mapped or explicitly excluded with a reason - the second direction
-  is what stops a newly added clinical field from never being exported;
+  getter produces is either mapped or explicitly excluded with a reason - the second direction is
+  what stops a newly added clinical field from never being exported;
 - every set has a `case` in `ObsProjector.fetchRows`, or it would read no rows at all;
 - every getter exposes the `uuid` the ledger keys on;
 - concepts are declared with a mapping source, never a bare local id;
-- the field count (120) is asserted exactly, since it can only change with a schema change;
-  the curation counts are asserted as **floors** (≥ 15 coded, ≥ 4 sets exporting) rather than
-  equalities, because curation is expected routine work and an exact assertion would fail the
-  build on every batch and train people to edit the number without reading it. A floor still
-  catches the regression that matters - concepts disappearing from the manifest. `ciel_match.py`
-  prints the new figure to raise it to.
+- the field count (120) is asserted exactly, since it can only change with a schema change, while
+  the curation counts are **floors** (≥ 44 curated, ≥ 14 sets exporting). Curation is expected
+  routine work, so an exact assertion would fail the build on every batch and train people to
+  edit the number without reading it. A floor still catches concepts disappearing from the
+  manifest; `ciel_match.py` prints the new figure to raise it to.
 
-`QuickDeploymentTest` covers the other half: it boots a real Spring/Hibernate context, so the
-new mapping file, the projector bean and its transaction proxy are exercised rather than assumed.
+`ObsProjectorConditionFlagTest` covers the projector's own logic over a static-mocked `Context`:
+a true flag becomes a coded Condition, a false one exports nothing at all, an unresolvable
+concept is reported rather than thrown, an unchanged fingerprint leaves a row alone, and a
+changed one supersedes and re-exports it.
+
+`QuickDeploymentTest` boots a real Spring/Hibernate context, so the mapping file, the projector
+bean and its transaction proxy are exercised rather than assumed.
