@@ -8,7 +8,7 @@ sequelae, discharge and follow-up - with full CRUD backed by MySQL and a two-tie
 privilege model so nurses and surgeons/radiologists see different levels of access.
 
 **Target platform:** OpenMRS Platform 2.5.9 / Reference Application 2.12.2
-**Module ID:** `patientview` · **Package:** `org.openmrs.module.patientview` · **Version:** `1.4.5`
+**Module ID:** `patientview` · **Package:** `org.openmrs.module.patientview` · **Version:** `1.4.6`
 
 Thanks to `hanyG175` and `bouzenaali` for starting the job: [Repo](https://github.com/hanyG175/openmrs-patientview-module)
 
@@ -285,8 +285,8 @@ credentials moved from hardcoded YAML into a `.env` file. These files update the
 ## 11. Known limitations / roadmap
 
 - All ten tabs are built (§2); the Fiche de Neurochirurgie is fully covered.
-- **76 of the 120 concept-backed fields have no concept yet** (§15.7). The export machinery is
-  complete and tested; 44 fields and 14 of the 16 sets export today. What is left is dictionary
+- **70 of the 120 concept-backed fields have no concept yet** (§15.7). The export machinery is
+  complete and tested; 50 fields export, and all 16 sets now produce something. What is left is dictionary
   work needing a clinician and a CIEL curator, not a developer, and `tools/ciel_match.py` turns
   it into reviewing a pre-filled table. Of the remainder, roughly a third are narrative free text
   with no natural coded equivalent, so a realistic ceiling is well short of 120.
@@ -331,6 +331,11 @@ credentials moved from hardcoded YAML into a `.env` file. These files update the
 
 ## 12. Version history
 
+- **1.4.6** — Six more fields curated after clinical review of the matcher's remaining
+  datatype-compatible candidates: referring physician, responsible neurosurgeon, surgeon
+  (twice), histopathology findings and secondary epilepsy. Curation 44 → 50, and **all 16
+  sets now export something**. Five candidates were rejected, including CIEL *Parity* and
+  *Gravida* — obstetric counts — proposed for the number of brain lesions.
 - **1.4.5** — **Curating a concept now re-projects the rows it affects, automatically.**
   Each ledger entry records a fingerprint of the mapping it was projected with; when that
   mapping changes the row is projected again and its previous encounter and conditions are
@@ -654,7 +659,7 @@ CIEL first and using local concepts only for the genuine residue.
 
 ### 15.6 Curation status
 
-**44 of the 120 concept-backed fields carry a concept** (a 121st, the section 8 diagnosis, needs
+**50 of the 120 concept-backed fields carry a concept** (a 121st, the section 8 diagnosis, needs
 none). Every code was verified against the loaded dictionary or a public source before being
 committed:
 
@@ -684,7 +689,7 @@ as of this admission" answerable.
 
 ### 15.7 Curating the rest
 
-The remaining **76 fields** are a dictionary task, not a coding one. Do not do it by hand.
+The remaining **70 fields** are a dictionary task, not a coding one. Do not do it by hand.
 
 **`tools/ciel_match.py`** turns it into a review pass:
 
@@ -802,7 +807,7 @@ context needed) checks it against the code in both directions:
 - every getter exposes the `uuid` the ledger keys on;
 - concepts are declared with a mapping source, never a bare local id;
 - the field count (120) is asserted exactly, since it can only change with a schema change, while
-  the curation counts are **floors** (≥ 44 curated, ≥ 14 sets exporting). Curation is expected
+  the curation counts are **floors** (≥ 50 curated, ≥ 16 sets exporting). Curation is expected
   routine work, so an exact assertion would fail the build on every batch and train people to
   edit the number without reading it. A floor still catches concepts disappearing from the
   manifest; `ciel_match.py` prints the new figure to raise it to.
