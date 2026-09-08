@@ -247,16 +247,29 @@ public interface PatientviewDao {
      */
     void saveImagingNote(Patient patient, Map<String, Object> data);
     /**
-     * Source-row uuids for this patient and manifest set that have already been projected into
-     * the core clinical model. Drives the projector's idempotency.
+     * Source-row uuid to the mapping fingerprint it was last projected with, for this patient and
+     * set. A uuid absent from the map has never been projected; one whose fingerprint differs from
+     * the current mapping is stale and must be projected again.
      * @param patient the patient
      * @param sourceSet manifest set id, e.g. "patientview.vitalSigns"
-     * @return the uuids already projected
+     * @return uuid to fingerprint; the fingerprint is null for rows written before 1.4.5
      */
-    List<String> getProjectedSourceUuids(Patient patient, String sourceSet);
+    Map<String, String> getProjectionFingerprints(Patient patient, String sourceSet);
 
     /**
-     * Record that one source row has been projected. Append-only, like every other write here.
+     * The ledger entry for one source row, or null if it has never been projected.
+     * @param patient the patient
+     * @param sourceSet manifest set id
+     * @param sourceUuid uuid of the patientview row
+     * @return the ledger entry, or null
+     */
+    FhirProjection getFhirProjection(Patient patient, String sourceSet, String sourceUuid);
+
+    /**
+     * Record that one source row has been projected, or update its entry when the row is
+     * re-projected after a mapping change. The ledger is infrastructure rather than clinical
+     * data, so unlike every other table here it is updated in place - the superseded encounter
+     * itself is voided with a reason, which is where that audit trail lives.
      * @param projection the ledger entry
      */
     void saveFhirProjection(FhirProjection projection);

@@ -882,5 +882,11 @@
             <column name="patient_id"/>
         </createIndex>
     </changeSet>
+    <changeSet id="patientview-2026-09-08-01" author="patientview-roadmap">
+        <comment>Add manifest_fingerprint to the projection ledger (1.4.5). Records which version of the mapping each row was projected with, so curating a concept later re-projects the affected rows automatically instead of leaving them stuck with whatever resolved at the time. Nullable on purpose: rows written before this column existed compare as stale and are re-projected once, which is exactly the desired upgrade behaviour.</comment>
+        <addColumn tableName="patientview_fhir_projection">
+            <column name="manifest_fingerprint" type="varchar(64)"/>
+        </addColumn>
+    </changeSet>
 
 </databaseChangeLog>
